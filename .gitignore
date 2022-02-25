@@ -1,0 +1,13 @@
+.DS_Store
+.classpath
+.settings/
+/.settings
+.classpath
+.project
+.settings/
+.metadata
+target/
+/log
+.mvn/
+bin/
+data/
