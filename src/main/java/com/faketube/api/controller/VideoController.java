@@ -12,9 +12,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +26,8 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import com.faketube.api.dto.VideoDto;
 import com.faketube.api.exception.NotFoundException;
-import com.faketube.api.model.VideoModel;
+import com.faketube.api.model.VideoModelAdd;
+import com.faketube.api.model.VideoModelUpdate;
 import com.faketube.api.service.VideoService;
 import com.faketube.store.entity.video.StreamBytesInfo;
 
@@ -49,6 +53,8 @@ public class VideoController {
 	public static final String GET_PLAYER_VIDEO_BY_ID="/api/video/player/{videoId}"; 
 	public static final String UPLOAD_NEW_VIDEO_FROM_USER="/api/video/upload"; 
 	public static final String GET_ALL_GRADE_VIDEO_FROM_USER = "/api/video/grade-videos";
+	public static final String DELETE_VIDEO_FROM_USER_BY_VIDEO_ID = "/api/video/{videoId}";
+	private static final String UPDATE_VIDEO_FROM_USER = "/api/video/";
 	
 	@GetMapping(GET_VIDEO_BY_ID)
 	public ResponseEntity<?> getVideoById(@PathVariable("videoId") String videoId,
@@ -80,7 +86,7 @@ public class VideoController {
 	}
 	
 	@PostMapping(path=UPLOAD_NEW_VIDEO_FROM_USER, consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
-	public ResponseEntity<?> uploadVideo(VideoModel video){
+	public ResponseEntity<?> uploadVideo(VideoModelAdd video){
 		videoService.saveNewVideo(video);
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
@@ -91,6 +97,21 @@ public class VideoController {
 		
 		return ResponseEntity.ok(videoService.getAllGradeVideoFromUser(principal));
 		
+	}
+	
+	@DeleteMapping(DELETE_VIDEO_FROM_USER_BY_VIDEO_ID)
+	public ResponseEntity<?> deleteVideoById(@PathVariable("videoId") String videoId, //TODO change string principal to Pricipal security
+			@RequestParam("principal") String principal){
+		videoService.deleteVideoById(videoId, principal);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		
+	}
+	
+	@PutMapping(UPDATE_VIDEO_FROM_USER)
+	public ResponseEntity<?> updateVideo(VideoModelUpdate videoModel,
+			@RequestParam("principal") String principal){ 						//TODO
+		videoService.updateVideo(videoModel, principal);
+		return new ResponseEntity<>("Video is update",HttpStatus.ACCEPTED);
 	}
 	
 	

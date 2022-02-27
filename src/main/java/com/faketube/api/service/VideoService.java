@@ -8,7 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpRange;
 
 import com.faketube.api.dto.VideoDto;
-import com.faketube.api.model.VideoModel;
+import com.faketube.api.model.VideoModelAdd;
+import com.faketube.api.model.VideoModelUpdate;
 import com.faketube.store.entity.video.StreamBytesInfo;
 
 public interface VideoService {
@@ -17,8 +18,12 @@ public interface VideoService {
 
 	Optional<StreamBytesInfo> getStreamBytes(String videoId, HttpRange object);
 	
-	void saveNewVideo(VideoModel request);
+	void saveNewVideo(VideoModelAdd request);
 
 	List<VideoDto> getAllGradeVideoFromUser(String principal);
+
+	void deleteVideoById(String videoId, String principal);
+
+	void updateVideo(VideoModelUpdate videoModel, String principal);
 
 }

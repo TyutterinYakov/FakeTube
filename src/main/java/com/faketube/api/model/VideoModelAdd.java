@@ -2,13 +2,13 @@ package com.faketube.api.model;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public class VideoModel {
+public class VideoModelAdd {
 
 	private String title;
 	private String description;
 	private MultipartFile video;
 //	private MultipartFile preview;
-	public VideoModel() {
+	public VideoModelAdd() {
 		super();
 	}
 	public String getTitle() {

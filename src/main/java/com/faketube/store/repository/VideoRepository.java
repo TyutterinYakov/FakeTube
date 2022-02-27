@@ -1,5 +1,7 @@
 package com.faketube.store.repository;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,5 +22,9 @@ public interface VideoRepository extends JpaRepository<VideoEntity, String>{
 	
 	@Query(nativeQuery=true, value="SELECT * FROM video_metadata WHERE video_id=?1 AND status!=?2 AND user_user_id=?3")
 	Optional<VideoEntity> findVideoByIdAndIsNotStatusAndUserId(String videoId, String delete, Long userId);
+
+	void deleteAllByDeletedAtBefore(LocalDateTime minusMonths);
+
+	List<VideoEntity> findAllByDeletedAtBefore(LocalDateTime minusMonths);
 
 }

@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +30,8 @@ import org.springframework.stereotype.Service;
 import com.faketube.api.dto.VideoDto;
 import com.faketube.api.dto.factory.VideoDtoFactory;
 import com.faketube.api.exception.NotFoundException;
-import com.faketube.api.model.VideoModel;
+import com.faketube.api.model.VideoModelAdd;
+import com.faketube.api.model.VideoModelUpdate;
 import com.faketube.api.service.VideoService;
 import com.faketube.store.entity.stats.VideoUniqueViews;
 import com.faketube.store.entity.user.UserEntity;
@@ -131,7 +134,7 @@ public class VideoServiceImpl implements VideoService{
 	}
 	
 	@Override
-	public void saveNewVideo(VideoModel request) {
+	public void saveNewVideo(VideoModelAdd request) {
 		if(request.getVideo()==null) {
 			throw new NotFoundException();
 		}
@@ -149,11 +152,7 @@ public class VideoServiceImpl implements VideoService{
 	
 	@Override
 	public List<VideoDto> getAllGradeVideoFromUser(String principal) {
-		UserEntity user = userDao.findByEmail(principal).orElseThrow(()->
-			new NotFoundException(
-					String.format(
-							"Ошибка! Пользователь с email \"%s\" не найден", 
-							principal)));
+		UserEntity user = findUserByEmail(principal);
 		return videoDtoFactory.createListDto(
 				user.getGradeVideo()
 				.stream()
@@ -162,7 +161,50 @@ public class VideoServiceImpl implements VideoService{
 				.collect(Collectors.toList()));
 	}
 	
+	@Override
+	@Transactional
+	public void deleteVideoById(String videoId, String principal) {
+		UserEntity user = findUserByEmail(principal);
+		videoDao.findVideoByIdAndIsNotStatusAndUserId(
+				videoId, DELETE.name(), user.getUserId())
+					.ifPresentOrElse((v)->{
+						v.setDeletedAt(LocalDateTime.now());
+						v.setStatus(DELETE);
+					}, ()->{
+						throw new NotFoundException(
+							String.format(
+									"Видео с идентификатором \"%s\" не найдено у пользователя: %s",
+									videoId, principal));
+					});
+	}
 	
+	
+	@Override
+	@Transactional
+	public void updateVideo(VideoModelUpdate videoModel, String email) {
+		UserEntity user = findUserByEmail(email);
+		videoDao.findVideoByIdAndIsNotStatusAndUserId(
+				videoModel.getVideoId(), DELETE.name(), user.getUserId()).ifPresentOrElse((v)->{
+					v.setTitle(videoModel.getTitle());
+					v.setDescription(videoModel.getDescription());
+					v.setStatus(videoModel.getStatus());
+				}, ()->{
+					throw new NotFoundException(
+						String.format(
+								"Видео с идентификатором \"%s\" не найдено у пользователя: %s",
+								videoModel.getVideoId(), email));
+				});
+		
+	}
+	
+	
+	private UserEntity findUserByEmail(String email) {
+		return userDao.findByEmail(email).orElseThrow(()->
+		new NotFoundException(
+				String.format(
+						"Ошибка! Пользователь с email \"%s\" не найден", 
+						email)));
+	}
 	
 	
 	
@@ -197,7 +239,7 @@ public class VideoServiceImpl implements VideoService{
 	}
 
 
-	private VideoEntity saveNewVideoFromDirectory(VideoModel request, VideoEntity video) {
+	private VideoEntity saveNewVideoFromDirectory(VideoModelAdd request, VideoEntity video) {
 		Path directory = Path.of(dataFolder, video.getVideoId());
 		try {
 			Files.createDirectories(directory);
@@ -211,6 +253,9 @@ public class VideoServiceImpl implements VideoService{
 			throw new IllegalStateException();
 		}
 	}
+
+
+
 
 
 

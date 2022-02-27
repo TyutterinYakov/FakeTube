@@ -1,5 +1,6 @@
 package com.faketube.store.entity.video;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,11 +37,13 @@ public class VideoEntity {
 	private Long fileSize;
 	private Long videoLength;
 	private String contentType;
+	private LocalDateTime createdAt = LocalDateTime.now();
+	private LocalDateTime deletedAt;
 	@ManyToOne(cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
 	private UserEntity user;
-	@OneToMany(mappedBy="video", cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="video", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
 	private List<VideoUniqueViews> viewsList;
-	@OneToMany(mappedBy="video", cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
+	@OneToMany(mappedBy="video", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
 	private Set<GradeVideo> grades = new HashSet<>();
 	
 	public VideoEntity() {
@@ -132,9 +135,23 @@ public class VideoEntity {
 	public void setGrades(Set<GradeVideo> grades) {
 		this.grades = grades;
 	}
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+	public LocalDateTime getDeletedAt() {
+		return deletedAt;
+	}
+	public void setDeletedAt(LocalDateTime deletedAt) {
+		this.deletedAt = deletedAt;
+	}
 	
-	
-	
+	@Override
+	public String toString() {
+		return String.format("%s %s %s %s %s", videoId, title, fileName, deletedAt, user.getUserId());
+	}
 	
 	
 	
