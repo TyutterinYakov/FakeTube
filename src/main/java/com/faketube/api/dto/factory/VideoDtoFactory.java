@@ -28,8 +28,6 @@ public class VideoDtoFactory {
 				entity.getTitle(),
 				entity.getDescription(),
 				entity.getViews(),
-				entity.getLikes(),
-				entity.getDislikes(),
 				entity.getStatus(),
 //				userDtoFactory
 //					.createUserDto(entity.getUser()),

@@ -1,6 +1,8 @@
 package com.faketube.store.entity.video;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -14,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.faketube.store.entity.stats.GradeVideo;
 import com.faketube.store.entity.stats.VideoUniqueViews;
 import com.faketube.store.entity.user.UserEntity;
 
@@ -29,8 +32,6 @@ public class VideoEntity {
 	@Enumerated(value=EnumType.STRING)
 	private VideoStatus status = VideoStatus.PUBLIC;
 	private Integer views=0;
-	private Integer likes=0;
-	private Integer dislikes=0;
 	private String fileName;
 	private Long fileSize;
 	private Long videoLength;
@@ -39,6 +40,9 @@ public class VideoEntity {
 	private UserEntity user;
 	@OneToMany(mappedBy="video", cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
 	private List<VideoUniqueViews> viewsList;
+	@OneToMany(mappedBy="video", cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
+	private Set<GradeVideo> grades = new HashSet<>();
+	
 	public VideoEntity() {
 		super();
 	}
@@ -53,7 +57,6 @@ public class VideoEntity {
 		this.fileSize = fileSize;
 		this.contentType = contentType;
 	}
-
 
 
 
@@ -86,18 +89,6 @@ public class VideoEntity {
 	}
 	public void setViews(Integer views) {
 		this.views = views;
-	}
-	public Integer getLikes() {
-		return likes;
-	}
-	public void setLikes(Integer likes) {
-		this.likes = likes;
-	}
-	public Integer getDislikes() {
-		return dislikes;
-	}
-	public void setDislikes(Integer dislikes) {
-		this.dislikes = dislikes;
 	}
 	public String getFileName() {
 		return fileName;
@@ -135,6 +126,13 @@ public class VideoEntity {
 	public void setViewsList(List<VideoUniqueViews> viewsList) {
 		this.viewsList = viewsList;
 	}
+	public Set<GradeVideo> getGrades() {
+		return grades;
+	}
+	public void setGrades(Set<GradeVideo> grades) {
+		this.grades = grades;
+	}
+	
 	
 	
 	

@@ -14,6 +14,8 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.faketube.store.entity.stats.GradeVideo;
+import com.faketube.store.entity.stats.VideoUniqueViews;
 import com.faketube.store.entity.video.VideoEntity;
 
 @Entity
@@ -31,6 +33,8 @@ public class UserEntity {
 	private Set<VideoEntity> videos = new HashSet<>();
 	@Enumerated(value = EnumType.STRING)
 	private UserRole role = UserRole.CREATOR;
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH, mappedBy="user")
+	private Set<GradeVideo> gradeVideo = new HashSet<>();
 	public Long getUserId() {
 		return userId;
 	}
@@ -66,6 +70,12 @@ public class UserEntity {
 	}
 	public void setRole(UserRole role) {
 		this.role = role;
+	}
+	public Set<GradeVideo> getGradeVideo() {
+		return gradeVideo;
+	}
+	public void setGradeVideo(Set<GradeVideo> gradeVideo) {
+		this.gradeVideo = gradeVideo;
 	}
 	
 	

@@ -9,8 +9,6 @@ public class VideoDto {
 	private String title;
 	private String description;
 	private Integer views;
-	private Integer likes;
-	private Integer dislikes;
 	private VideoStatus status;
 //	private UserDto user;
 	private String streamUrl;
@@ -21,7 +19,7 @@ public class VideoDto {
 	}
 
 	public VideoDto(String videoId, String contentType, String title, String description,
-			Integer views, Integer likes, Integer dislikes, VideoStatus status, 
+			Integer views, VideoStatus status, 
 //			UserDto user,
 			String streamUrl) {
 		super();
@@ -30,8 +28,6 @@ public class VideoDto {
 		this.title = title;
 		this.description = description;
 		this.views = views;
-		this.likes = likes;
-		this.dislikes = dislikes;
 		this.status = status;
 //		this.user = user;
 		this.streamUrl = streamUrl;
@@ -76,22 +72,6 @@ public class VideoDto {
 
 	public void setViews(Integer views) {
 		this.views = views;
-	}
-
-	public Integer getLikes() {
-		return likes;
-	}
-
-	public void setLikes(Integer likes) {
-		this.likes = likes;
-	}
-
-	public Integer getDislikes() {
-		return dislikes;
-	}
-
-	public void setDislikes(Integer dislikes) {
-		this.dislikes = dislikes;
 	}
 
 	public VideoStatus getStatus() {
