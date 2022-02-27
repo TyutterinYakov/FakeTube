@@ -10,9 +10,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -29,9 +31,11 @@ import com.faketube.api.exception.NotFoundException;
 import com.faketube.api.model.VideoModel;
 import com.faketube.api.service.VideoService;
 import com.faketube.store.entity.stats.VideoUniqueViews;
+import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.StreamBytesInfo;
 import com.faketube.store.entity.video.VideoEntity;
 import com.faketube.store.entity.video.VideoStatus;
+import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 import com.faketube.store.repository.VideoUniqueViewsRepository;
 
@@ -48,14 +52,16 @@ public class VideoServiceImpl implements VideoService{
 	private final VideoRepository videoDao;
 	private final VideoDtoFactory videoDtoFactory;
 	private final VideoUniqueViewsRepository uniqueViewsDao;
+	private final UserRepository userDao;
 	
 	@Autowired
-	public VideoServiceImpl(VideoRepository videoDao, VideoDtoFactory videoDtoFactory,
-			VideoUniqueViewsRepository uniqueViewsDao) {
-		super();
+	public VideoServiceImpl(VideoRepository videoDao, 
+			VideoDtoFactory videoDtoFactory, VideoUniqueViewsRepository uniqueViewsDao,
+			UserRepository userDao) {
 		this.videoDao = videoDao;
 		this.videoDtoFactory = videoDtoFactory;
 		this.uniqueViewsDao = uniqueViewsDao;
+		this.userDao = userDao;
 	}
 
 	private static final VideoStatus DELETE = VideoStatus.DELETE;
@@ -140,6 +146,26 @@ public class VideoServiceImpl implements VideoService{
 		
 	}
 	
+	
+	@Override
+	public List<VideoDto> getAllGradeVideoFromUser(String principal) {
+		UserEntity user = userDao.findByEmail(principal).orElseThrow(()->
+			new NotFoundException(
+					String.format(
+							"Ошибка! Пользователь с email \"%s\" не найден", 
+							principal)));
+		return videoDtoFactory.createListDto(
+				user.getGradeVideo()
+				.stream()
+				.map((gr)->gr.getVideo())
+				.filter((v)->!v.getStatus().equals(DELETE))
+				.collect(Collectors.toList()));
+	}
+	
+	
+	
+	
+	
 	private static String sha1(HttpServletRequest request) {
 		Map<String, Object> headers = new TreeMap<>();
 		request.getHeaderNames().asIterator().forEachRemaining((s)->{
@@ -185,6 +211,8 @@ public class VideoServiceImpl implements VideoService{
 			throw new IllegalStateException();
 		}
 	}
+
+
 
 
 }

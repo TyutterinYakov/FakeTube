@@ -5,7 +5,7 @@ import java.util.Optional;
 import com.faketube.api.dto.GradeVideoDto;
 import com.faketube.store.entity.stats.GradeVideoStatus;
 
-public interface StatusVideoService {
+public interface StatsVideoService {
 
 	void addVideoGrade(String userName, String videoId, Optional<GradeVideoStatus> grade);
 

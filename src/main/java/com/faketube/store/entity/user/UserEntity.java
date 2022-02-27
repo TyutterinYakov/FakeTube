@@ -15,7 +15,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.faketube.store.entity.stats.GradeVideo;
-import com.faketube.store.entity.stats.VideoUniqueViews;
 import com.faketube.store.entity.video.VideoEntity;
 
 @Entity

@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import com.faketube.api.dto.VideoDto;
 import com.faketube.api.exception.NotFoundException;
 import com.faketube.api.model.VideoModel;
 import com.faketube.api.service.VideoService;
@@ -46,6 +48,7 @@ public class VideoController {
 	public static final String GET_VIDEO_BY_ID="/api/video/{videoId}"; 
 	public static final String GET_PLAYER_VIDEO_BY_ID="/api/video/player/{videoId}"; 
 	public static final String UPLOAD_NEW_VIDEO_FROM_USER="/api/video/upload"; 
+	public static final String GET_ALL_GRADE_VIDEO_FROM_USER = "/api/video/grade-videos";
 	
 	@GetMapping(GET_VIDEO_BY_ID)
 	public ResponseEntity<?> getVideoById(@PathVariable("videoId") String videoId,
@@ -80,6 +83,14 @@ public class VideoController {
 	public ResponseEntity<?> uploadVideo(VideoModel video){
 		videoService.saveNewVideo(video);
 		return ResponseEntity.status(HttpStatus.OK).build();
+	}
+	
+	@GetMapping(GET_ALL_GRADE_VIDEO_FROM_USER)
+	public ResponseEntity<List<VideoDto>> getAllGradeVideo(
+			@RequestParam("principal") String principal){ //TODO
+		
+		return ResponseEntity.ok(videoService.getAllGradeVideoFromUser(principal));
+		
 	}
 	
 	

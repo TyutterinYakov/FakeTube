@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.faketube.api.dto.GradeVideoDto;
 import com.faketube.api.exception.NotFoundException;
-import com.faketube.api.service.StatusVideoService;
+import com.faketube.api.service.StatsVideoService;
 import com.faketube.store.entity.stats.GradeVideo;
 import com.faketube.store.entity.stats.GradeVideoStatus;
 import com.faketube.store.entity.user.UserEntity;
@@ -20,14 +20,14 @@ import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
 @Service
-public class StatusVideoServiceImpl implements StatusVideoService{
+public class StatsVideoServiceImpl implements StatsVideoService{
 
 	private final UserRepository userDao;
 	private final VideoRepository videoDao;
 	private final GradeVideoRepository gradeVideoDao;
 	
 	@Autowired
-	public StatusVideoServiceImpl(UserRepository userDao, VideoRepository videoDao,
+	public StatsVideoServiceImpl(UserRepository userDao, VideoRepository videoDao,
 			GradeVideoRepository gradeVideoDao) {
 		super();
 		this.userDao = userDao;
@@ -106,9 +106,6 @@ public class StatusVideoServiceImpl implements StatusVideoService{
 			}
 		return gradeVideoDto;
 	}
-	
-	
-	
 	
 	
 	

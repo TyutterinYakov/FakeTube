@@ -1,5 +1,6 @@
 package com.faketube.api.service;
 
+import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,5 +18,7 @@ public interface VideoService {
 	Optional<StreamBytesInfo> getStreamBytes(String videoId, HttpRange object);
 	
 	void saveNewVideo(VideoModel request);
+
+	List<VideoDto> getAllGradeVideoFromUser(String principal);
 
 }

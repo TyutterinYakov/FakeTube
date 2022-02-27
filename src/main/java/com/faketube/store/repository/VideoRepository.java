@@ -6,9 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import com.faketube.api.dto.VideoDto;
 import com.faketube.store.entity.video.VideoEntity;
-import com.faketube.store.entity.video.VideoStatus;
 
 @Repository
 public interface VideoRepository extends JpaRepository<VideoEntity, String>{

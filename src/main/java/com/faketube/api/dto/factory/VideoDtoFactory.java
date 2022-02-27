@@ -1,6 +1,8 @@
 package com.faketube.api.dto.factory;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.faketube.api.dto.VideoDto;
@@ -10,16 +12,6 @@ import com.faketube.store.entity.video.VideoEntity;
 public class VideoDtoFactory {
 
 	
-	private final UserDtoFactory userDtoFactory;
-	
-	@Autowired
-	public VideoDtoFactory(UserDtoFactory userDtoFactory) {
-		super();
-		this.userDtoFactory = userDtoFactory;
-	}
-
-
-
 	public VideoDto createVideoDto(VideoEntity entity) {
 		
 		return new VideoDto(
@@ -29,8 +21,15 @@ public class VideoDtoFactory {
 				entity.getDescription(),
 				entity.getViews(),
 				entity.getStatus(),
-//				userDtoFactory
-//					.createUserDto(entity.getUser()),
 				"http://localhost:8080/api/video/player/"+entity.getVideoId());
+	}
+	
+	
+	public List<VideoDto> createListDto(List<VideoEntity> entities){
+	
+		return entities
+				.stream()
+				.map(this::createVideoDto)
+				.collect(Collectors.toList());
 	}
 }
