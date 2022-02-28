@@ -28,6 +28,7 @@ public class UserEntity {
 	private String username;
 	private String email;
 	private String password;
+	private boolean accessToGradeVideo = true;
 	@OneToMany(mappedBy="user", cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
 	private Set<VideoEntity> videos = new HashSet<>();
 	@Enumerated(value = EnumType.STRING)
@@ -76,6 +77,13 @@ public class UserEntity {
 	public void setGradeVideo(Set<GradeVideo> gradeVideo) {
 		this.gradeVideo = gradeVideo;
 	}
+	public boolean isAccessToGradeVideo() {
+		return accessToGradeVideo;
+	}
+	public void setAccessToGradeVideo(boolean accessToGradeVideo) {
+		this.accessToGradeVideo = accessToGradeVideo;
+	}
+	
 	
 	
 	
