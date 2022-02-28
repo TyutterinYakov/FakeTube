@@ -1,5 +1,6 @@
 package com.faketube.api.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpRange;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,7 +60,7 @@ public class VideoController {
 		return ResponseEntity.ok(videoService.getVideoById(videoId, request));
 	}
 	
-	@GetMapping(GET_PLAYER_VIDEO_BY_ID)
+	@GetMapping(GET_PLAYER_VIDEO_BY_ID)    							//TODO
 	public ResponseEntity<StreamingResponseBody> getPlayerVideoById(
 			@RequestHeader(value="Range", required = false) String httpRangeHeader,
 			@PathVariable("videoId") String videoId) {
@@ -81,32 +83,35 @@ public class VideoController {
 		return builder.body(stream.getResponse());
 	}
 	
-	@PostMapping(path=UPLOAD_NEW_VIDEO_FROM_USER, consumes=MediaType.MULTIPART_FORM_DATA_VALUE)
+	@PostMapping(path=UPLOAD_NEW_VIDEO_FROM_USER, consumes=MediaType.MULTIPART_FORM_DATA_VALUE) //TODO
 	public ResponseEntity<?> uploadVideo(VideoModelAdd video){
 		videoService.saveNewVideo(video);
 		return ResponseEntity.status(HttpStatus.OK).build();
 	}
 	
 	@GetMapping(GET_ALL_GRADE_VIDEO_FROM_USER)
+	@PreAuthorize("hasAuthority('user:read')")
 	public ResponseEntity<List<VideoDto>> getAllGradeVideo(
-			@RequestParam("principal") String principal){ //TODO
+			Principal principal){
 		
-		return ResponseEntity.ok(videoService.getAllGradeVideoFromUser(principal));
+		return ResponseEntity.ok(videoService.getAllGradeVideoFromUser(principal.getName()));
 		
 	}
 	
 	@DeleteMapping(DELETE_VIDEO_FROM_USER_BY_VIDEO_ID)
+	@PreAuthorize("hasAuthority('user:read')")
 	public ResponseEntity<?> deleteVideoById(@PathVariable("videoId") String videoId, //TODO change string principal to Pricipal security
-			@RequestParam("principal") String principal){
-		videoService.deleteVideoById(videoId, principal);
+			Principal principal){
+		videoService.deleteVideoById(videoId, principal.getName());
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		
 	}
 	
 	@PutMapping(UPDATE_VIDEO_FROM_USER)
+	@PreAuthorize("hasAuthority('user:read')")
 	public ResponseEntity<?> updateVideo(VideoModelUpdate videoModel,
-			@RequestParam("principal") String principal){ 						//TODO
-		videoService.updateVideo(videoModel, principal);
+			Principal principal){ 					
+		videoService.updateVideo(videoModel, principal.getName());
 		return new ResponseEntity<>("Video is update",HttpStatus.ACCEPTED);
 	}
 	

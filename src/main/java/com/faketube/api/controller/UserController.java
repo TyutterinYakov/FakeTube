@@ -1,5 +1,6 @@
 package com.faketube.api.controller;
 
+import java.security.Principal;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -7,6 +8,7 @@ import javax.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -44,10 +46,10 @@ public class UserController {
 	public static final String GET_ALL_GRADE_VIDEO_USER = "/api/video/user/grade/{userId}";
 	public static final String GET_INFO_FROM_USER = "/api/video/user/info/{userId}";
 	public static final String UPDATE_USER_PROFILE = "/api/user/profile";
-	public static final String CREATE_USER_PROFILE = "/api/user/profile";
+//	public static final String CREATE_USER_PROFILE = "/api/user/profile";
 	public static final String DELETE_USER_PROFILE = "/api/user/profile";
 	public static final String BLOCK_USER_BY_USER_ID = "/api/user/profile/block";
-	public static final String UNBLOCK_USER_BY_USER_ID = "/api/user/profile/ublock";;
+	public static final String UNBLOCK_USER_BY_USER_ID = "/api/user/profile/unblock";;
 	
 	
 	
@@ -67,33 +69,37 @@ public class UserController {
 	}
 	
 	@PutMapping(UPDATE_USER_PROFILE)
-	public ResponseEntity<?> updateUserProfile(			//TODO String principal to PRINCIPAL security
-			@RequestParam("principal") String principal, @Valid UserModel userModel, BindingResult result){
+	@PreAuthorize("hasAuthority('user:read')")
+	public ResponseEntity<?> updateUserProfile(		
+			Principal principal, @Valid UserModel userModel, BindingResult result){
 		checkBindingResult(result);
-		userService.updateUserProfile(principal, userModel);
+		userService.updateUserProfile(principal.getName(), userModel);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
 	
-	@PostMapping(CREATE_USER_PROFILE)
-	public ResponseEntity<?> createUserProfile(@Valid UserModelRegister userModel, BindingResult result){
-		checkBindingResult(result);
-		userService.createUserProfile(userModel);
-		return new ResponseEntity<>(HttpStatus.CREATED);
-	}
+//	@PostMapping(CREATE_USER_PROFILE)
+//	public ResponseEntity<?> createUserProfile(@Valid UserModelRegister userModel, BindingResult result){
+//		checkBindingResult(result);
+//		userService.createUserProfile(userModel);
+//		return new ResponseEntity<>(HttpStatus.CREATED);
+//	}
 	
 	@DeleteMapping(DELETE_USER_PROFILE)
-	public ResponseEntity<?> deleteUserProfile(String principal) { ///TODO PRINCIPAL
-		userService.deleteUserProfile(principal);
+	@PreAuthorize("hasAuthority('user:read')")
+	public ResponseEntity<?> deleteUserProfile(Principal principal) { 
+		userService.deleteUserProfile(principal.getName());
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 	
 	@PatchMapping(BLOCK_USER_BY_USER_ID)
-	public ResponseEntity<?> blockUserByUserId(@RequestParam("userId") Long userId){   //TODO ONLY ADMIN
+	@PreAuthorize("hasAuthority('user:write')")
+	public ResponseEntity<?> blockUserByUserId(@RequestParam("userId") Long userId){  
 		userService.blockUserByUserId(userId);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
 	@PatchMapping(UNBLOCK_USER_BY_USER_ID)
-	public ResponseEntity<?> unblockuserByUserId(@RequestParam("userId") Long userId){ //TODO ONLY ADMIN
+	@PreAuthorize("hasAuthority('user:write')")
+	public ResponseEntity<?> unblockUserByUserId(@RequestParam("userId") Long userId){ 
 		userService.unblockUserByUserId(userId);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}

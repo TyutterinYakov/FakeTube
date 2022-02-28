@@ -89,15 +89,15 @@ public class UserServiceImpl implements UserService {
 		}
 	}
 	
-	@Override
-	public void createUserProfile(UserModelRegister userModel) {
-		findUserByEmailAndThrowExceptionFound(userModel.getEmail());
-		userDao.save(new UserEntity(
-				userModel.getUserName(), 
-				userModel.getEmail(), 
-				userModel.getPassword())  //TODO code password
-		);
-	}
+//	@Override
+//	public void createUserProfile(UserModelRegister userModel) {
+//		findUserByEmailAndThrowExceptionFound(userModel.getEmail());
+//		userDao.save(new UserEntity(
+//				userModel.getUserName(), 
+//				userModel.getEmail(), 
+//				userModel.getPassword())  //TODO code password
+//		);
+//	}
 	
 	
 	@Override

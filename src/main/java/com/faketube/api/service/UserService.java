@@ -17,7 +17,7 @@ public interface UserService {
 
 	void updateUserProfile(String principal, UserModel userModel);
 
-	void createUserProfile(UserModelRegister userModel);
+//	void createUserProfile(UserModelRegister userModel);
 
 	void deleteUserProfile(String principal);
 

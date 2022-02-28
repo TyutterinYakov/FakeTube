@@ -153,7 +153,7 @@ public class VideoServiceImpl implements VideoService{
 	
 	@Override
 	public List<VideoDto> getAllGradeVideoFromUser(String principal) {
-		UserEntity user = findUserByEmail(principal);
+		UserEntity user = findUserByEmailAndActive(principal);
 		return videoDtoFactory.createListDto(
 				user.getGradeVideo()
 				.stream()
@@ -165,7 +165,7 @@ public class VideoServiceImpl implements VideoService{
 	@Override
 	@Transactional
 	public void deleteVideoById(String videoId, String principal) {
-		UserEntity user = findUserByEmail(principal);
+		UserEntity user = findUserByEmailAndActive(principal);
 		videoDao.findVideoByIdAndIsNotStatusAndUserId(
 				videoId, DELETE.name(), BLOCK.name(), user.getUserId())
 					.ifPresentOrElse((v)->{
@@ -183,7 +183,7 @@ public class VideoServiceImpl implements VideoService{
 	@Override
 	@Transactional
 	public void updateVideo(VideoModelUpdate videoModel, String email) {
-		UserEntity user = findUserByEmail(email);
+		UserEntity user = findUserByEmailAndActive(email);
 		videoDao.findVideoByIdAndIsNotStatusAndUserId(
 				videoModel.getVideoId(), DELETE.name(), BLOCK.name(), user.getUserId()).ifPresentOrElse((v)->{
 					v.setTitle(videoModel.getTitle());
@@ -199,8 +199,8 @@ public class VideoServiceImpl implements VideoService{
 	}
 	
 	
-	private UserEntity findUserByEmail(String email) {
-		return userDao.findByEmail(email).orElseThrow(()->
+	private UserEntity findUserByEmailAndActive(String email) {
+		return userDao.findByEmailAndActive(email, true).orElseThrow(()->
 		new NotFoundException(
 				String.format(
 						"Ошибка! Пользователь с email \"%s\" не найден", 

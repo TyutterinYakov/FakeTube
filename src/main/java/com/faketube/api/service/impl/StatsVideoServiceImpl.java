@@ -1,5 +1,6 @@
 package com.faketube.api.service.impl;
 
+import java.security.Principal;
 import java.util.Optional;
 
 import javax.transaction.Transactional;
@@ -38,47 +39,51 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	
 	@Transactional
 	@Override
-	public void addVideoGrade(String userName, String videoId,
+	public void addVideoGrade(Principal principal, String videoId,
 			Optional<GradeVideoStatus> grade) {
-		UserEntity user = findUserByUsername(userName);
-		findVideoByIdAndStatus(videoId, VideoStatus.PUBLIC, 
-				VideoStatus.LINK).ifPresentOrElse((vid)->{
-			gradeVideoDao.findByUserAndVideo(user, vid).ifPresentOrElse((gr)->{
-				grade.ifPresentOrElse((grReq)->{
-					gr.setStatus(grReq);
+		if(principal!=null) {
+			String userName=principal.getName();
+			UserEntity user = findUserByUsernameAndActive(userName);
+			findVideoByIdAndStatus(videoId, VideoStatus.PUBLIC, 
+					VideoStatus.LINK).ifPresentOrElse((vid)->{
+				gradeVideoDao.findByUserAndVideo(user, vid).ifPresentOrElse((gr)->{
+					grade.ifPresentOrElse((grReq)->{
+						gr.setStatus(grReq);
+					}, ()->{
+						gradeVideoDao.deleteById(gr.getGradeId());
+					});
 				}, ()->{
-					gradeVideoDao.deleteById(gr.getGradeId());
-				});
+					grade.ifPresent((gr)->{
+						gradeVideoDao.save(new GradeVideo(user, vid, gr));
+					});
+				}
+				);
 			}, ()->{
-				grade.ifPresent((gr)->{
-					gradeVideoDao.save(new GradeVideo(user, vid, gr));
-				});
-			}
-			);
-		}, ()->{
-			VideoEntity videoUser = findVideoByUserAndId(user, videoId);
-			gradeVideoDao.findByUserAndVideo(user, videoUser).ifPresentOrElse((gradeVid)->{
-				grade.ifPresentOrElse((gr)->{
-					gradeVid.setStatus(gr);
+				VideoEntity videoUser = findVideoByUserAndId(user, videoId);
+				gradeVideoDao.findByUserAndVideo(user, videoUser).ifPresentOrElse((gradeVid)->{
+					grade.ifPresentOrElse((gr)->{
+						gradeVid.setStatus(gr);
+					}, ()->{
+						gradeVideoDao.deleteById(gradeVid.getGradeId());});
 				}, ()->{
-					gradeVideoDao.deleteById(gradeVid.getGradeId());});
-			}, ()->{
-				grade.ifPresent((gr)->{
-					gradeVideoDao.save(new GradeVideo(user, videoUser, gr));
+					grade.ifPresent((gr)->{
+						gradeVideoDao.save(new GradeVideo(user, videoUser, gr));
+					});
 				});
-			});
-		});;
+			});;
+		}
 	}
 	
 	
 	@Override
-	public GradeVideoDto getVideoDtoByVideoId(String videoId, String userName) {
+	public GradeVideoDto getVideoDtoByVideoId(String videoId, Principal principal) {
 		GradeVideoDto gradeVideoDto = new GradeVideoDto();
 			Optional<VideoEntity> videoOptional = findVideoByIdAndStatus(videoId,
 					VideoStatus.PUBLIC, VideoStatus.LINK);
 			if(videoOptional.isPresent()) {
-				if(!userName.isBlank()) {
-					UserEntity user = findUserByUsername(userName);
+				if(principal!=null) {
+					String userName=principal.getName();
+					UserEntity user = findUserByUsernameAndActive(userName);
 					gradeVideoDao.findByUserAndVideo(user, videoOptional.get()).ifPresent((gr)->{
 					gradeVideoDto.setGivenStatus(gr.getStatus());
 				});
@@ -90,18 +95,29 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 						gradeVideoDao.countByVideoAndStatus(videoOptional.get(),
 								GradeVideoStatus.DISLIKE));
 			} else {
-				if(!userName.isBlank()) {
-					UserEntity user = findUserByUsername(userName);
+				if(principal!=null) {
+					String userName=principal.getName();
+					UserEntity user = findUserByUsernameAndActive(userName);
+					VideoEntity video = findVideoByUserAndId(user, videoId);
 					gradeVideoDao.findByUserAndVideo(user, findVideoByUserAndId(user, 
-							findVideoByUserAndId(user, videoId).getVideoId())).ifPresent((gr)->{
+							video.getVideoId())).ifPresentOrElse((gr)->{
 						gradeVideoDto.setGivenStatus(gr.getStatus());
-					});;
+					}, ()->{
+						throw new NotFoundException(
+								String.format(
+										"Видео с идентификатором \"%s\" не найдено", 
+										videoId));});;
 					gradeVideoDto.setCountLikes(
-							gradeVideoDao.countByVideoAndStatus(videoOptional.get(),
+							gradeVideoDao.countByVideoAndStatus(video,
 									GradeVideoStatus.LIKE));
 					gradeVideoDto.setCountDislikes(
-							gradeVideoDao.countByVideoAndStatus(videoOptional.get(),
+							gradeVideoDao.countByVideoAndStatus(video,
 									GradeVideoStatus.DISLIKE));
+				} else {
+					throw new NotFoundException(
+							String.format(
+									"Видео с идентификатором \"%s\" не найдено", 
+									videoId));
 				}
 			}
 		return gradeVideoDto;
@@ -111,12 +127,14 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	
 	
 	
+
+
 	private Optional<VideoEntity> findVideoByIdAndStatus(String videoId, VideoStatus public1, VideoStatus link) {
 		return videoDao.findVideoByIdAndStatus(videoId, public1.name(), link.name());
 	}
 
 
-	private UserEntity findUserByUsername(String userName) {
+	private UserEntity findUserByUsernameAndActive(String userName) {
 		return userDao.findByEmailAndActive(userName, true).orElseThrow(()->
 				new NotFoundException(
 						String.format(
