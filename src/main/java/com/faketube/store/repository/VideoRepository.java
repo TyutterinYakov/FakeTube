@@ -20,8 +20,8 @@ public interface VideoRepository extends JpaRepository<VideoEntity, String>{
 //	Optional<VideoEntity> findByVideoIdAndStatusIsNot(Long videoId, VideoStatus delete);
 	
 	
-	@Query(nativeQuery=true, value="SELECT * FROM video_metadata WHERE video_id=?1 AND status!=?2 AND user_user_id=?3")
-	Optional<VideoEntity> findVideoByIdAndIsNotStatusAndUserId(String videoId, String delete, Long userId);
+	@Query(nativeQuery=true, value="SELECT * FROM video_metadata WHERE video_id=?1 AND status!=?2 AND status!=?3 AND user_user_id=?4")
+	Optional<VideoEntity> findVideoByIdAndIsNotStatusAndUserId(String videoId, String delete, String block, Long userId);
 
 	void deleteAllByDeletedAtBefore(LocalDateTime minusMonths);
 

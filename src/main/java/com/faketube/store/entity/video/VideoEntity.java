@@ -39,6 +39,9 @@ public class VideoEntity {
 	private String contentType;
 	private LocalDateTime createdAt = LocalDateTime.now();
 	private LocalDateTime deletedAt;
+	private LocalDateTime blockedAt;
+	@Enumerated(value=EnumType.STRING)
+	private VideoStatus oldStatusVideo;
 	@ManyToOne(cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
 	private UserEntity user;
 	@OneToMany(mappedBy="video", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
@@ -61,8 +64,6 @@ public class VideoEntity {
 		this.contentType = contentType;
 	}
 
-
-
 	public String getVideoId() {
 		return videoId;
 	}
@@ -71,6 +72,12 @@ public class VideoEntity {
 	}
 	public String getTitle() {
 		return title;
+	}
+	public LocalDateTime getBlockedAt() {
+		return blockedAt;
+	}
+	public void setBlockedAt(LocalDateTime blockedAt) {
+		this.blockedAt = blockedAt;
 	}
 	public void setTitle(String title) {
 		this.title = title;
@@ -147,7 +154,14 @@ public class VideoEntity {
 	public void setDeletedAt(LocalDateTime deletedAt) {
 		this.deletedAt = deletedAt;
 	}
-	
+	public VideoStatus getOldStatusVideo() {
+		return oldStatusVideo;
+	}
+	public void setOldStatusVideo(VideoStatus oldStatusVideo) {
+		this.oldStatusVideo = oldStatusVideo;
+	}
+
+
 	@Override
 	public String toString() {
 		return String.format("%s %s %s %s %s", videoId, title, fileName, deletedAt, user.getUserId());

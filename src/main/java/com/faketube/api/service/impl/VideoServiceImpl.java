@@ -71,6 +71,7 @@ public class VideoServiceImpl implements VideoService{
 	private static final VideoStatus PRIVATE = VideoStatus.PRIVATE;
 	private static final VideoStatus PUBLIC = VideoStatus.PUBLIC;
 	private static final VideoStatus LINK = VideoStatus.LINK;
+	private static final VideoStatus BLOCK = VideoStatus.BLOCK;
 	
 	@Override
 	public VideoDto getVideoById(String videoId, HttpServletRequest request) {
@@ -166,7 +167,7 @@ public class VideoServiceImpl implements VideoService{
 	public void deleteVideoById(String videoId, String principal) {
 		UserEntity user = findUserByEmail(principal);
 		videoDao.findVideoByIdAndIsNotStatusAndUserId(
-				videoId, DELETE.name(), user.getUserId())
+				videoId, DELETE.name(), BLOCK.name(), user.getUserId())
 					.ifPresentOrElse((v)->{
 						v.setDeletedAt(LocalDateTime.now());
 						v.setStatus(DELETE);
@@ -184,7 +185,7 @@ public class VideoServiceImpl implements VideoService{
 	public void updateVideo(VideoModelUpdate videoModel, String email) {
 		UserEntity user = findUserByEmail(email);
 		videoDao.findVideoByIdAndIsNotStatusAndUserId(
-				videoModel.getVideoId(), DELETE.name(), user.getUserId()).ifPresentOrElse((v)->{
+				videoModel.getVideoId(), DELETE.name(), BLOCK.name(), user.getUserId()).ifPresentOrElse((v)->{
 					v.setTitle(videoModel.getTitle());
 					v.setDescription(videoModel.getDescription());
 					v.setStatus(videoModel.getStatus());

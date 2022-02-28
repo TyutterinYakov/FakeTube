@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.faketube.store.entity.video.VideoEntity;
+import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
 @Component
@@ -25,16 +26,19 @@ public class AutoDeleteVideo {
 	private static final Logger logger = LoggerFactory.getLogger(AutoDeleteVideo.class);
 	
 	private final VideoRepository videoDao;
-
+	private final UserRepository userDao;
+	
 	@Autowired
-	public AutoDeleteVideo(VideoRepository videoDao) {
+	public AutoDeleteVideo(VideoRepository videoDao, UserRepository userDao) {
 		super();
 		this.videoDao = videoDao;
-	};
-	
+		this.userDao = userDao;
+	}
+
+
 	@Transactional
 	@Scheduled(cron="0 0 3 * * *")
-	public void clean() {
+	public void cleanVideo() {
 		List<VideoEntity> videoDeleted = videoDao.findAllByDeletedAtBefore(
 				LocalDateTime.now()
 				.minusMonths(1))
@@ -43,6 +47,13 @@ public class AutoDeleteVideo {
 				.collect(Collectors.toList());
 		
 		logger.info(String.format("all videos deleted after a month: %s", videoDeleted));
+	}
+	
+	
+	@Transactional
+	@Scheduled(cron="0 0 4 * * *")
+	public void cleanUserProfile() {
+		userDao.deleteAllByDeletedAtBefore(LocalDateTime.now().minusMonths(1));
 	}
 	
 	

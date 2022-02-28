@@ -1,18 +1,29 @@
 package com.faketube.store.repository;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.faketube.store.entity.user.UserEntity;
-import com.faketube.store.entity.video.VideoEntity;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long>{
+
+	Optional<UserEntity> findByEmailAndDeletedAt(String email, Object object);
+
+	Optional<UserEntity> findByuserIdAndDeletedAt(Long userId, Object object);
+
 	Optional<UserEntity> findByEmail(String email);
+
+	void deleteAllByDeletedAtBefore(LocalDateTime minusMonths);
+
+	Optional<UserEntity> findByEmailAndActive(String userName, boolean b);
+
+	Optional<UserEntity> findByuserIdAndDeletedAtAndActive(Long userId, Object object, boolean b);
+
+	Optional<UserEntity> findByUserIdAndActive(Long userId, boolean b);
 	
 
 }

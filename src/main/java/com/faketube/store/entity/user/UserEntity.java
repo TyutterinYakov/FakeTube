@@ -1,5 +1,6 @@
 package com.faketube.store.entity.user;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,13 +29,33 @@ public class UserEntity {
 	private String username;
 	private String email;
 	private String password;
+	private Boolean active = true;
 	private boolean accessToGradeVideo = true;
-	@OneToMany(mappedBy="user", cascade=CascadeType.REFRESH, fetch=FetchType.LAZY)
+	private LocalDateTime createdAt = LocalDateTime.now();
+	private LocalDateTime deletedAt;
+	private LocalDateTime blockedAt;
+	@OneToMany(mappedBy="user", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
 	private Set<VideoEntity> videos = new HashSet<>();
 	@Enumerated(value = EnumType.STRING)
 	private UserRole role = UserRole.CREATOR;
-	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH, mappedBy="user")
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="user")
 	private Set<GradeVideo> gradeVideo = new HashSet<>();
+	
+	public UserEntity() {
+		super();
+	}
+	
+	
+	
+	public UserEntity(String username, String email, String password) {
+		super();
+		this.username = username;
+		this.email = email;
+		this.password = password;
+	}
+
+
+
 	public Long getUserId() {
 		return userId;
 	}
@@ -44,6 +65,37 @@ public class UserEntity {
 	public String getUsername() {
 		return username;
 	}
+	public boolean isActive() {
+		return active;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	
+	public Boolean getActive() {
+		return active;
+	}
+
+
+
+	public void setActive(Boolean active) {
+		this.active = active;
+	}
+
+
+
+	public LocalDateTime getBlockedAt() {
+		return blockedAt;
+	}
+
+
+
+	public void setBlockedAt(LocalDateTime blockedAt) {
+		this.blockedAt = blockedAt;
+	}
+
+
+
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -83,6 +135,19 @@ public class UserEntity {
 	public void setAccessToGradeVideo(boolean accessToGradeVideo) {
 		this.accessToGradeVideo = accessToGradeVideo;
 	}
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+	public LocalDateTime getDeletedAt() {
+		return deletedAt;
+	}
+	public void setDeletedAt(LocalDateTime deletedAt) {
+		this.deletedAt = deletedAt;
+	}
+	
 	
 	
 	

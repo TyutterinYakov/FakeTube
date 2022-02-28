@@ -1,7 +1,10 @@
 package com.faketube.api.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,11 +14,13 @@ import com.faketube.api.dto.VideoDto;
 import com.faketube.api.dto.factory.UserDtoFactory;
 import com.faketube.api.dto.factory.VideoDtoFactory;
 import com.faketube.api.exception.NotFoundException;
+import com.faketube.api.exception.UserFoundException;
+import com.faketube.api.model.UserModel;
+import com.faketube.api.model.UserModelRegister;
 import com.faketube.api.service.UserService;
 import com.faketube.store.entity.stats.GradeVideoStatus;
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoStatus;
-import com.faketube.store.repository.GradeVideoRepository;
 import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
@@ -69,13 +74,112 @@ public class UserServiceImpl implements UserService {
 						findUserById(userId));
 	}
 	
+	@Override
+	@Transactional
+	public void updateUserProfile(String principal, UserModel userModel) {
+		UserEntity user = findUserByEmail(principal);
+		if(!user.getEmail().equals(userModel.getEmail())) {
+			findUserByEmailAndThrowExceptionFound(userModel.getEmail());
+			user.setEmail(userModel.getEmail());
+		}
+		user.setUsername(userModel.getUserName());
+		user.setAccessToGradeVideo(userModel.isAccessToGradeVideo());
+		if(!userModel.getPassword().isBlank()) {
+			user.setPassword(userModel.getPassword()); //TODO code password
+		}
+	}
+	
+	@Override
+	public void createUserProfile(UserModelRegister userModel) {
+		findUserByEmailAndThrowExceptionFound(userModel.getEmail());
+		userDao.save(new UserEntity(
+				userModel.getUserName(), 
+				userModel.getEmail(), 
+				userModel.getPassword())  //TODO code password
+		);
+	}
+	
+	
+	@Override
+	@Transactional
+	public void deleteUserProfile(String principal) {
+		UserEntity user = findUserByEmail(principal);
+		user.getVideos().stream().filter((v)->v.getStatus()!=VideoStatus.DELETE).forEach((vid)->{
+			vid.setDeletedAt(LocalDateTime.now());
+			vid.setOldStatusVideo(vid.getStatus());
+			vid.setStatus(VideoStatus.DELETE);
+		});
+		user.setDeletedAt(LocalDateTime.now());
+		user.setActive(false);
+	}
+	
+	@Override
+	@Transactional
+	public void blockUserByUserId(Long userId) {
+		userDao.findById(userId).ifPresentOrElse((u)->{
+			u.setActive(false);
+			u.setBlockedAt(LocalDateTime.now());
+			u.getVideos().stream().forEach((v)->{
+				v.setOldStatusVideo(v.getStatus());
+				v.setStatus(VideoStatus.BLOCK);
+				v.setBlockedAt(LocalDateTime.now());
+			});
+		}, ()->{
+			throw new NotFoundException(
+					String.format(
+							"Пользователь с идентификатором \"%s\" не найден",
+							userId));
+		});;
+	}
+	
+	@Override
+	@Transactional
+	public void unblockUserByUserId(Long userId) {
+		userDao.findById(userId).ifPresentOrElse((u)->{
+			u.setActive(true);
+			u.setBlockedAt(null);
+			u.getVideos().stream().forEach((v)->{
+				v.setStatus(v.getOldStatusVideo());
+				v.setOldStatusVideo(null);
+				v.setBlockedAt(null);
+			});
+		}, ()->{
+			throw new NotFoundException(
+					String.format(
+							"Пользователь с идентификатором \"%s\" не найден",
+							userId));
+		});;
+	}
+	
+	
+	
+	
 	
 
+	private UserEntity findUserByEmail(String email) {
+		return userDao.findByEmailAndDeletedAt(email, null).orElseThrow(()->
+				new NotFoundException(String.format(
+						"Ошибка! Пользователь с почтой \"%s\" не найден", email)));
+	}
+	
 	
 	private UserEntity findUserById(Long userId) {
-		return userDao.findById(userId).orElseThrow(()->
-				new NotFoundException("Пользователь с идентификатором \"%s\" не найден"));
+		return userDao.findByUserIdAndActive(userId, true).orElseThrow(()->
+				new NotFoundException(String.format(
+						"Пользователь с идентификатором \"%s\" не найден", userId)));
 	}
+	
+	private void findUserByEmailAndThrowExceptionFound(String email) {
+		userDao.findByEmail(email).ifPresent((u)->{
+			throw new UserFoundException(String.format(
+					"Пользователь с email \"%s\" уже есть в системе",
+							email));
+			});
+	}
+
+
+
+
 	
 	
 }

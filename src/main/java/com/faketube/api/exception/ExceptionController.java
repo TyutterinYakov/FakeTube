@@ -13,5 +13,13 @@ public class ExceptionController {
 	public ResponseEntity<?> notFoundException(NotFoundException ex){
 		return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
 	}
+	@ExceptionHandler
+	public ResponseEntity<?> userFoundException(UserFoundException ex){
+		return new ResponseEntity<>(ex.getMessage(), HttpStatus.FOUND);
+	}
+	@ExceptionHandler
+	public ResponseEntity<?> badRequestException(BadRequestException ex){
+		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+	}
 	
 }

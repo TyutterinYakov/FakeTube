@@ -92,8 +92,8 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 			} else {
 				if(!userName.isBlank()) {
 					UserEntity user = findUserByUsername(userName);
-					VideoEntity video = findVideoByUserAndId(user, videoId);
-					gradeVideoDao.findByUserAndVideo(user, findVideoByUserAndId(user, videoId)).ifPresent((gr)->{
+					gradeVideoDao.findByUserAndVideo(user, findVideoByUserAndId(user, 
+							findVideoByUserAndId(user, videoId).getVideoId())).ifPresent((gr)->{
 						gradeVideoDto.setGivenStatus(gr.getStatus());
 					});;
 					gradeVideoDto.setCountLikes(
@@ -117,7 +117,7 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 
 
 	private UserEntity findUserByUsername(String userName) {
-		return userDao.findByEmail(userName).orElseThrow(()->
+		return userDao.findByEmailAndActive(userName, true).orElseThrow(()->
 				new NotFoundException(
 						String.format(
 								"Пользователь с ником \"%s\" не найден", 
@@ -127,7 +127,7 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	
 	private VideoEntity findVideoByUserAndId(UserEntity user, String videoId) {
 		
-		return videoDao.findVideoByIdAndIsNotStatusAndUserId(videoId, VideoStatus.DELETE.name(), user.getUserId()).orElseThrow(()->
+		return videoDao.findVideoByIdAndIsNotStatusAndUserId(videoId, VideoStatus.DELETE.name(), VideoStatus.BLOCK.name(), user.getUserId()).orElseThrow(()->
 				new NotFoundException(
 						String.format(
 								"Видео с идентификатором \"%s\" удалено или не найдено", 
