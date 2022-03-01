@@ -19,6 +19,8 @@ import javax.persistence.Table;
 
 import com.faketube.store.entity.stats.CommentEntity;
 import com.faketube.store.entity.stats.GradeVideo;
+import com.faketube.store.entity.video.AcceptedComplaint;
+import com.faketube.store.entity.video.VideoComplaintEntity;
 import com.faketube.store.entity.video.VideoEntity;
 
 @Entity
@@ -45,12 +47,16 @@ public class UserEntity {
 	private Set<GradeVideo> gradeVideo = new HashSet<>();
 	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="user")
 	private List<CommentEntity> comments = new LinkedList<>();
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="user")
+	private List<VideoComplaintEntity> complaints = new LinkedList<>();
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="authorVideo")
+	private List<AcceptedComplaint> authorVideos = new LinkedList<>();
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="complaintUser")
+	private List<AcceptedComplaint> complaintUsers = new LinkedList<>();
 	
 	public UserEntity() {
 		super();
 	}
-	
-	
 	
 	public UserEntity(String username, String email, String password) {
 		super();
@@ -58,8 +64,6 @@ public class UserEntity {
 		this.email = email;
 		this.password = password;
 	}
-
-
 
 	public Long getUserId() {
 		return userId;
@@ -76,31 +80,24 @@ public class UserEntity {
 	public void setActive(boolean active) {
 		this.active = active;
 	}
-	
 	public Boolean getActive() {
 		return active;
 	}
-
-
-
 	public void setActive(Boolean active) {
 		this.active = active;
 	}
-
-
-
+	public List<VideoComplaintEntity> getComplaints() {
+		return complaints;
+	}
+	public void setComplaints(List<VideoComplaintEntity> complaints) {
+		this.complaints = complaints;
+	}
 	public LocalDateTime getBlockedAt() {
 		return blockedAt;
 	}
-
-
-
 	public void setBlockedAt(LocalDateTime blockedAt) {
 		this.blockedAt = blockedAt;
 	}
-
-
-
 	public void setUsername(String username) {
 		this.username = username;
 	}
@@ -152,18 +149,25 @@ public class UserEntity {
 	public void setDeletedAt(LocalDateTime deletedAt) {
 		this.deletedAt = deletedAt;
 	}
-
-
-
 	public List<CommentEntity> getComments() {
 		return comments;
 	}
-
-
-
 	public void setComments(List<CommentEntity> comments) {
 		this.comments = comments;
 	}
+	public List<AcceptedComplaint> getAuthorVideos() {
+		return authorVideos;
+	}
+	public void setAuthorVideos(List<AcceptedComplaint> authorVideos) {
+		this.authorVideos = authorVideos;
+	}
+	public List<AcceptedComplaint> getComplaintUsers() {
+		return complaintUsers;
+	}
+	public void setComplaintUsers(List<AcceptedComplaint> complaintUsers) {
+		this.complaintUsers = complaintUsers;
+	}
+
 	
 	
 	

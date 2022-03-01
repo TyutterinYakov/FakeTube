@@ -19,7 +19,7 @@ public class ExceptionController {
 	}
 	@ExceptionHandler
 	public ResponseEntity<?> badRequestException(BadRequestException ex){
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
 	}
 	
 }

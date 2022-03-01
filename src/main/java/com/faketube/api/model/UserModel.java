@@ -10,8 +10,7 @@ public class UserModel {
 	@NotNull
 	private String email;
 	private String password="";
-	@NotNull
-	private Boolean accessToGradeVideo;
+	private Boolean accessToGradeVideo=true;
 	public String getUserName() {
 		return userName;
 	}
