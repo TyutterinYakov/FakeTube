@@ -2,6 +2,7 @@ package com.faketube.store.entity.video;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.faketube.store.entity.stats.CommentEntity;
 import com.faketube.store.entity.stats.GradeVideo;
 import com.faketube.store.entity.stats.VideoUniqueViews;
 import com.faketube.store.entity.user.UserEntity;
@@ -48,6 +50,8 @@ public class VideoEntity {
 	private List<VideoUniqueViews> viewsList;
 	@OneToMany(mappedBy="video", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
 	private Set<GradeVideo> grades = new HashSet<>();
+	@OneToMany(mappedBy="video", cascade=CascadeType.REMOVE, fetch=FetchType.LAZY)
+	private List<CommentEntity> comments = new LinkedList<>();
 	
 	public VideoEntity() {
 		super();
@@ -159,6 +163,14 @@ public class VideoEntity {
 	}
 	public void setOldStatusVideo(VideoStatus oldStatusVideo) {
 		this.oldStatusVideo = oldStatusVideo;
+	}
+	public List<CommentEntity> getComments() {
+		return comments;
+	}
+
+
+	public void setComments(List<CommentEntity> comments) {
+		this.comments = comments;
 	}
 
 

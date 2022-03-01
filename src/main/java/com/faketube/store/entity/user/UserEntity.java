@@ -2,6 +2,8 @@ package com.faketube.store.entity.user;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -15,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.faketube.store.entity.stats.CommentEntity;
 import com.faketube.store.entity.stats.GradeVideo;
 import com.faketube.store.entity.video.VideoEntity;
 
@@ -40,6 +43,8 @@ public class UserEntity {
 	private UserRole role = UserRole.CREATOR;
 	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="user")
 	private Set<GradeVideo> gradeVideo = new HashSet<>();
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="user")
+	private List<CommentEntity> comments = new LinkedList<>();
 	
 	public UserEntity() {
 		super();
@@ -147,6 +152,19 @@ public class UserEntity {
 	public void setDeletedAt(LocalDateTime deletedAt) {
 		this.deletedAt = deletedAt;
 	}
+
+
+
+	public List<CommentEntity> getComments() {
+		return comments;
+	}
+
+
+
+	public void setComments(List<CommentEntity> comments) {
+		this.comments = comments;
+	}
+	
 	
 	
 	

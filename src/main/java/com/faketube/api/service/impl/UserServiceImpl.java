@@ -18,6 +18,7 @@ import com.faketube.api.exception.UserFoundException;
 import com.faketube.api.model.UserModel;
 import com.faketube.api.model.UserModelRegister;
 import com.faketube.api.service.UserService;
+import com.faketube.store.entity.stats.CommentStatus;
 import com.faketube.store.entity.stats.GradeVideoStatus;
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoStatus;
@@ -104,19 +105,29 @@ public class UserServiceImpl implements UserService {
 	@Transactional
 	public void deleteUserProfile(String principal) {
 		UserEntity user = findUserByEmail(principal);
-		user.getVideos().stream().filter((v)->v.getStatus()!=VideoStatus.DELETE).forEach((vid)->{
+		user.getVideos().stream().filter(
+				(v)->v.getStatus()!=VideoStatus.DELETE&&v.getStatus()!=VideoStatus.BLOCK).forEach((vid)->{
 			vid.setDeletedAt(LocalDateTime.now());
 			vid.setOldStatusVideo(vid.getStatus());
 			vid.setStatus(VideoStatus.DELETE);
 		});
 		user.setDeletedAt(LocalDateTime.now());
 		user.setActive(false);
+		user.getComments().stream().filter((c)->c.getStatus()==CommentStatus.ACTIVE).forEach((com)->{
+			com.setOldStatus(com.getStatus());
+			com.setStatus(CommentStatus.DELETE);
+			com.setDeletedAt(LocalDateTime.now());
+		});;
 	}
 	
 	@Override
 	@Transactional
 	public void blockUserByUserId(Long userId) {
 		userDao.findById(userId).ifPresentOrElse((u)->{
+			u.getComments().stream().filter((c)->c.getStatus()==CommentStatus.ACTIVE).forEach((com)->{
+				com.setOldStatus(com.getStatus());
+				com.setStatus(CommentStatus.BLOCK);
+			});
 			u.setActive(false);
 			u.setBlockedAt(LocalDateTime.now());
 			u.getVideos().stream().forEach((v)->{
@@ -138,10 +149,14 @@ public class UserServiceImpl implements UserService {
 		userDao.findById(userId).ifPresentOrElse((u)->{
 			u.setActive(true);
 			u.setBlockedAt(null);
-			u.getVideos().stream().forEach((v)->{
+			u.getVideos().stream().filter((v)->v.getOldStatusVideo()!=null).forEach((v)->{
 				v.setStatus(v.getOldStatusVideo());
 				v.setOldStatusVideo(null);
 				v.setBlockedAt(null);
+			});
+			u.getComments().stream().filter((c)->c.getOldStatus()==CommentStatus.ACTIVE).forEach((com)->{
+				com.setStatus(com.getOldStatus());
+				com.setOldStatus(null);
 			});
 		}, ()->{
 			throw new NotFoundException(

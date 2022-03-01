@@ -1,6 +1,7 @@
 package com.faketube.api.controller;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.faketube.api.dto.CommentDto;
 import com.faketube.api.dto.GradeVideoDto;
 import com.faketube.api.service.StatsVideoService;
 import com.faketube.store.entity.stats.GradeVideoStatus;
@@ -35,6 +37,8 @@ public class StatsVideoController {
 	
 	public static final String GET_STATS_VIDEO_BY_VIDEO_ID_AND_PRINCIPAL = "/api/video/stats/{videoId}";
 	public static final String ADD_VIDEO_GRADE_BY_PRINCIPAL_AND_VIDEO_ID = "/api/video/stats/{videoId}";
+	public static final String GET_COMMENTS_VIDEO_BY_VIDEO_ID = "/api/video/comments/{videoId}";
+	public static final String ADD_COMMENT_VIDEO_BY_VIDEO_ID = "/api/video/comments/{videoId}";
 
 	
 	
@@ -52,6 +56,21 @@ public class StatsVideoController {
 			Principal principal){
 		return ResponseEntity.ok(statsVideoService.getVideoDtoByVideoId(videoId, principal));
 	}
+	
+	@GetMapping(GET_COMMENTS_VIDEO_BY_VIDEO_ID)
+	public ResponseEntity<List<CommentDto>> getCommentsVideo(@PathVariable("videoId") String videoId, Principal principal){
+		return ResponseEntity.ok(statsVideoService.getCommentsVideo(videoId, principal));
+	}
+	
+	@PostMapping(ADD_COMMENT_VIDEO_BY_VIDEO_ID)
+	@PreAuthorize("hasAuthority('user:read')")
+	public ResponseEntity<?> addCommentVideo(@RequestParam String message,
+			@PathVariable("videoId") String videoId, Principal principal){
+		statsVideoService.addCommentVideo(videoId, message, principal.getName());
+		return new ResponseEntity<>(HttpStatus.CREATED);
+	}
+	
+	
 	
 	
 	

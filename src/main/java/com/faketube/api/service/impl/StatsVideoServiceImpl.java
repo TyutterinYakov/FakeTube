@@ -1,21 +1,28 @@
 package com.faketube.api.service.impl;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.faketube.api.dto.CommentDto;
 import com.faketube.api.dto.GradeVideoDto;
+import com.faketube.api.dto.factory.CommentDtoFactory;
 import com.faketube.api.exception.NotFoundException;
 import com.faketube.api.service.StatsVideoService;
+import com.faketube.store.entity.stats.CommentEntity;
+import com.faketube.store.entity.stats.CommentStatus;
 import com.faketube.store.entity.stats.GradeVideo;
 import com.faketube.store.entity.stats.GradeVideoStatus;
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoEntity;
 import com.faketube.store.entity.video.VideoStatus;
+import com.faketube.store.repository.CommentRepository;
 import com.faketube.store.repository.GradeVideoRepository;
 import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
@@ -26,17 +33,21 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	private final UserRepository userDao;
 	private final VideoRepository videoDao;
 	private final GradeVideoRepository gradeVideoDao;
+	private final CommentDtoFactory commentDtoFactory;
+	private final CommentRepository commentDao;
 	
 	@Autowired
-	public StatsVideoServiceImpl(UserRepository userDao, VideoRepository videoDao,
-			GradeVideoRepository gradeVideoDao) {
+	public StatsVideoServiceImpl(UserRepository userDao, VideoRepository videoDao, GradeVideoRepository gradeVideoDao,
+			CommentDtoFactory commentDtoFactory, CommentRepository commentDao) {
 		super();
 		this.userDao = userDao;
 		this.videoDao = videoDao;
 		this.gradeVideoDao = gradeVideoDao;
+		this.commentDtoFactory = commentDtoFactory;
+		this.commentDao = commentDao;
 	}
-	
-	
+
+
 	@Transactional
 	@Override
 	public void addVideoGrade(Principal principal, String videoId,
@@ -124,6 +135,61 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	}
 	
 	
+	@Override
+	public List<CommentDto> getCommentsVideo(String videoId, Principal principal) {
+		Optional<VideoEntity> videoOptional = 
+				findVideoByIdAndStatus(videoId, VideoStatus.PUBLIC, VideoStatus.LINK);
+		if(videoOptional.isPresent()) {
+			return commentDtoFactory
+					.createListCommentDto(
+							videoOptional.get()
+								.getComments()
+								.stream()
+								.filter((c)->
+									c.getStatus()
+									.equals(CommentStatus.ACTIVE))
+								.collect(Collectors.toList()));
+		}
+		if(principal!=null) {
+			return commentDtoFactory.createListCommentDto(findVideoByUserAndId(
+					findUserByUsernameAndActive(
+							principal.getName()),
+							videoId)
+					.getComments()
+						.stream()
+						.filter((c)->
+							c.getStatus()
+							.equals(CommentStatus.ACTIVE))
+						.collect(Collectors.toList()));
+		}
+		throw new NotFoundException(
+				String.format("Видео с идентификатором \"%s\" не найдено или доступ к нему Вам закрыт", 
+						videoId));
+	}
+	
+	
+	@Override
+	public void addCommentVideo(String videoId, String message, String userName) {
+		UserEntity user = findUserByUsernameAndActive(userName);
+		findVideoByIdAndStatus(videoId, VideoStatus.PUBLIC, VideoStatus.LINK)
+		.ifPresentOrElse((v)->{
+			commentDao.save(
+					new CommentEntity(
+						message,
+						user,
+						v));
+		}, ()->{
+			commentDao.save(
+				new CommentEntity(
+						message,
+						user,
+						findVideoByUserAndId(user, videoId)));
+			}
+		);
+	}
+	
+	
+	
 	
 	
 	
@@ -153,6 +219,9 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 			);
 		
 	}
+
+
+
 	
 	
 	
