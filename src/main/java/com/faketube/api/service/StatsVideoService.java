@@ -18,4 +18,8 @@ public interface StatsVideoService {
 
 	void addCommentVideo(String videoId, String message, String name);
 
+	void deleteCommentVideo(Principal principal, String videoId, Long commentId);
+
+	void updateCommentVideo(String message, String videoId, String name, Long commentId);
+
 }

@@ -9,18 +9,20 @@ public class CommentDto {
 	private String videoId;
 	private LocalDateTime createdAt;
 	private UserDto user;
+	private Boolean change = false;
 	
 	public CommentDto() {
 		super();
 	}
 	public CommentDto(Long commentId, String message, 
-			String videoId, LocalDateTime createdAt, UserDto user) {
+			String videoId, LocalDateTime createdAt, UserDto user, Boolean change) {
 		super();
 		this.commentId = commentId;
 		this.message = message;
 		this.videoId = videoId;
 		this.createdAt=createdAt;
 		this.user = user;
+		this.change = change;
 	}
 	public Long getCommentId() {
 		return commentId;
@@ -52,6 +54,13 @@ public class CommentDto {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
+	public Boolean getChange() {
+		return change;
+	}
+	public void setChange(Boolean change) {
+		this.change = change;
+	}
+	
 	
 	
 	

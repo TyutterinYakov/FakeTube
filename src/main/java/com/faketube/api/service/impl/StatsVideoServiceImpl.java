@@ -1,6 +1,7 @@
 package com.faketube.api.service.impl;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -189,11 +190,66 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	}
 	
 	
+	@Override
+	@Transactional
+	public void deleteCommentVideo(Principal principal, String videoId, Long commentId) {
+		UserEntity user = findUserByUsernameAndActive(principal.getName());
+		findVideoByIdAndStatus(videoId, VideoStatus.PUBLIC,VideoStatus.LINK).ifPresentOrElse((v)->{
+			commentDao.findByUserAndVideoAndCommentIdAndStatus(
+					user, v, commentId, CommentStatus.ACTIVE)
+				.ifPresentOrElse((c)->{
+					c.setOldStatus(c.getStatus());
+					c.setStatus(CommentStatus.DELETE);
+					c.setDeletedAt(LocalDateTime.now());
+					}, ()->{
+					throw new NotFoundException(
+							String.format(
+									"Комментарий пользователя %s не найден", 
+									principal.getName()));
+				});
+		},()->{commentDao.findByUserAndVideoAndCommentIdAndStatus(
+				user, findVideoByUserAndId(user, videoId), commentId, CommentStatus.ACTIVE)
+						.ifPresentOrElse((c)->{
+							c.setOldStatus(c.getStatus());
+							c.setStatus(CommentStatus.DELETE);
+							c.setDeletedAt(LocalDateTime.now());
+				}, ()->{
+					throw new NotFoundException(
+						String.format(
+								"Комментарий пользователя %s не найден", 
+								principal.getName()));
+					});
+		});
+	}
 	
 	
+	@Override
+	@Transactional
+	public void updateCommentVideo(String message, String videoId, String userName, Long commentId) {
+		UserEntity user = findUserByUsernameAndActive(userName);
+		findVideoByIdAndStatus(videoId, VideoStatus.LINK, VideoStatus.PUBLIC).ifPresentOrElse((v)->{
+			commentDao.findByUserAndVideoAndCommentIdAndStatus(
+					user, v, commentId, CommentStatus.ACTIVE).ifPresentOrElse((c)->{
+				c.setChange(true);
+				c.setMessage(message);
+			}, ()->{
+				throw new NotFoundException(String.format("Комментарий \"%s\" не найден", commentId));
+			});
+		}, ()->{
+			commentDao.findByUserAndVideoAndCommentIdAndStatus(
+					user, findVideoByUserAndId(
+							user, videoId), commentId, CommentStatus.ACTIVE).ifPresentOrElse((c)->{
+						c.setChange(true);
+						c.setMessage(message);
+					}, ()->{
+						throw new NotFoundException(String.format("Комментарий \"%s\" не найден", commentId));
+					});
+		});
+		
+		
+	}
 	
 	
-
 
 	private Optional<VideoEntity> findVideoByIdAndStatus(String videoId, VideoStatus public1, VideoStatus link) {
 		return videoDao.findVideoByIdAndStatus(videoId, public1.name(), link.name());
@@ -211,14 +267,19 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	
 	private VideoEntity findVideoByUserAndId(UserEntity user, String videoId) {
 		
-		return videoDao.findVideoByIdAndIsNotStatusAndUserId(videoId, VideoStatus.DELETE.name(), VideoStatus.BLOCK.name(), user.getUserId()).orElseThrow(()->
-				new NotFoundException(
-						String.format(
-								"Видео с идентификатором \"%s\" удалено или не найдено", 
-								videoId))
-			);
+		return videoDao.findVideoByIdAndIsNotStatusAndUserId(videoId, VideoStatus.DELETE.name(),
+				VideoStatus.BLOCK.name(), user.getUserId()).orElseThrow(()->
+					new NotFoundException(
+							String.format(
+									"Видео с идентификатором \"%s\" удалено или не найдено", 
+									videoId))
+				);
 		
 	}
+
+
+
+
 
 
 

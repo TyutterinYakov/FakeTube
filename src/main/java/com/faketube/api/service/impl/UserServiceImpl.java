@@ -16,7 +16,6 @@ import com.faketube.api.dto.factory.VideoDtoFactory;
 import com.faketube.api.exception.NotFoundException;
 import com.faketube.api.exception.UserFoundException;
 import com.faketube.api.model.UserModel;
-import com.faketube.api.model.UserModelRegister;
 import com.faketube.api.service.UserService;
 import com.faketube.store.entity.stats.CommentStatus;
 import com.faketube.store.entity.stats.GradeVideoStatus;

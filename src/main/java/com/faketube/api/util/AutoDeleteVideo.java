@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.faketube.store.entity.video.VideoEntity;
+import com.faketube.store.repository.CommentRepository;
 import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
@@ -27,12 +28,14 @@ public class AutoDeleteVideo {
 	
 	private final VideoRepository videoDao;
 	private final UserRepository userDao;
-	
+	private final CommentRepository commentDao;
+
 	@Autowired
-	public AutoDeleteVideo(VideoRepository videoDao, UserRepository userDao) {
+	public AutoDeleteVideo(VideoRepository videoDao, UserRepository userDao, CommentRepository commentDao) {
 		super();
 		this.videoDao = videoDao;
 		this.userDao = userDao;
+		this.commentDao = commentDao;
 	}
 
 
@@ -55,6 +58,13 @@ public class AutoDeleteVideo {
 	public void cleanUserProfile() {
 		userDao.deleteAllByDeletedAtBefore(LocalDateTime.now().minusMonths(1));
 	}
+	
+	@Transactional
+	@Scheduled(cron="0 0 5 * * *")
+	public void cleanCommentVideo() {
+		commentDao.deleteAllByDeletedAtBefore(LocalDateTime.now().minusMonths(1));
+	}
+	
 	
 	
 	

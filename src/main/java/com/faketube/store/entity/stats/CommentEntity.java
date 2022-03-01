@@ -26,6 +26,7 @@ public class CommentEntity {
 	private String message;
 	private LocalDateTime createdAt=LocalDateTime.now();
 	private LocalDateTime deletedAt;
+	private Boolean change = false;
 	@Enumerated(value = EnumType.STRING)
 	private CommentStatus status = CommentStatus.ACTIVE;
 	@Enumerated(value = EnumType.STRING)
@@ -92,6 +93,13 @@ public class CommentEntity {
 	public void setOldStatus(CommentStatus oldStatus) {
 		this.oldStatus = oldStatus;
 	}
+	public Boolean getChange() {
+		return change;
+	}
+	public void setChange(Boolean change) {
+		this.change = change;
+	}
+	
 	
 	
 	

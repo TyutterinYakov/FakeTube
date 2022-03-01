@@ -27,7 +27,8 @@ public class CommentDtoFactory {
 				entity.getVideo().getVideoId(),
 				entity.getCreatedAt(),
 				userDtoFactory.createUserDto(
-						entity.getUser()));
+						entity.getUser()),
+				entity.getChange());
 	}
 	
 	public List<CommentDto> createListCommentDto(List<CommentEntity> entities){
