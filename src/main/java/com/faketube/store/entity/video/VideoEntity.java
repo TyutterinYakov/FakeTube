@@ -59,15 +59,17 @@ public class VideoEntity {
 	
 
 	public VideoEntity(String title, String description, String fileName, Long fileSize,
-			String contentType) {
+			String contentType, UserEntity user) {
 		super();
 		this.title = title;
 		this.description = description;
 		this.fileName = fileName;
 		this.fileSize = fileSize;
 		this.contentType = contentType;
+		this.user=user;
 	}
 
+	
 	public String getVideoId() {
 		return videoId;
 	}

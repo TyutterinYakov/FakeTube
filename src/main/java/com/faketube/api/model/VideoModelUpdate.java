@@ -10,6 +10,10 @@ public class VideoModelUpdate {
 	private VideoStatus status;
 	
 	
+	
+	public VideoModelUpdate() {
+		super();
+	}
 	public String getVideoId() {
 		return videoId;
 	}

@@ -10,7 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,14 +76,24 @@ public class VideoServiceImpl implements VideoService{
 	private static final VideoStatus BLOCK = VideoStatus.BLOCK;
 	
 	@Override
-	public VideoDto getVideoById(String videoId, HttpServletRequest request) {
-		VideoEntity video = videoDao
-				.findVideoByIdAndStatus(videoId, LINK.name(), PUBLIC.name())
-					.orElseThrow(()->
-						new NotFoundException(String.format(
-								"Видео с идентификатором \"%s\" не найдено", 
-								videoId))
-			);
+	public VideoDto getVideoById(String videoId, HttpServletRequest request, Principal principal) {
+		Optional<VideoEntity> videoAccessAll = videoDao
+				.findVideoByIdAndStatus(videoId, LINK.name(), PUBLIC.name());
+		VideoEntity video=null;
+		if(videoAccessAll.isPresent()) {
+			video = videoAccessAll.get();
+		} else if(principal!=null) {
+				video = findVideoByIdAndIsNotStatusAndUserId(
+						videoId,
+						DELETE, 
+						BLOCK, 
+						findUserByEmailAndActive(
+								principal.getName())
+									.getUserId());
+		} else {
+			throw new NotFoundException(String.format("Видео с идентификатором \"%s\" не найдено", videoId));
+		}
+		
 		String viewersData=sha1(request);
 		if(!uniqueViewsDao.findByDataViewersAndVideo(viewersData, video).isPresent()) {
 			uniqueViewsDao.save(new VideoUniqueViews(viewersData, video));
@@ -135,17 +147,19 @@ public class VideoServiceImpl implements VideoService{
 	}
 	
 	@Override
-	public void saveNewVideo(VideoModelAdd request) {
+	public void saveNewVideo(VideoModelAdd request, String userName) {
 		if(request.getVideo()==null) {
 			throw new NotFoundException();
 		}
+		
 		saveNewVideoFromDirectory(request, videoDao.saveAndFlush(
 				new VideoEntity(
 					request.getTitle(), 
 					request.getDescription(),
 					request.getVideo().getOriginalFilename(),
 					request.getVideo().getSize(),
-					request.getVideo().getContentType())
+					request.getVideo().getContentType(),
+					findUserByEmailAndActive(userName))
 		));
 		
 	}
@@ -166,17 +180,7 @@ public class VideoServiceImpl implements VideoService{
 	@Transactional
 	public void deleteVideoById(String videoId, String principal) {
 		UserEntity user = findUserByEmailAndActive(principal);
-		videoDao.findVideoByIdAndIsNotStatusAndUserId(
-				videoId, DELETE.name(), BLOCK.name(), user.getUserId())
-					.ifPresentOrElse((v)->{
-						v.setDeletedAt(LocalDateTime.now());
-						v.setStatus(DELETE);
-					}, ()->{
-						throw new NotFoundException(
-							String.format(
-									"Видео с идентификатором \"%s\" не найдено у пользователя: %s",
-									videoId, principal));
-					});
+		deleteVideoByIdAndUser(videoId, user);
 	}
 	
 	
@@ -184,19 +188,31 @@ public class VideoServiceImpl implements VideoService{
 	@Transactional
 	public void updateVideo(VideoModelUpdate videoModel, String email) {
 		UserEntity user = findUserByEmailAndActive(email);
-		videoDao.findVideoByIdAndIsNotStatusAndUserId(
-				videoModel.getVideoId(), DELETE.name(), BLOCK.name(), user.getUserId()).ifPresentOrElse((v)->{
-					v.setTitle(videoModel.getTitle());
-					v.setDescription(videoModel.getDescription());
-					v.setStatus(videoModel.getStatus());
-				}, ()->{
-					throw new NotFoundException(
-						String.format(
-								"Видео с идентификатором \"%s\" не найдено у пользователя: %s",
-								videoModel.getVideoId(), email));
-				});
+		updateVideoByIdAndUser(videoModel, user);
+	}
+	
+	
+	@Override
+	@Transactional
+	public void updateMoreVideo(List<VideoModelUpdate> videoModels, String userName) {
+		UserEntity user = findUserByEmailAndActive(userName);
+		videoModels.stream().forEach((v)->{
+			updateVideoByIdAndUser(v, user);
+		});
+	}
+	
+	
+	@Override
+	@Transactional
+	public void deleteMoreVideo(String[] listVideoId, String userName) {
+		UserEntity user = findUserByEmailAndActive(userName);
+		Arrays.asList(listVideoId).stream().forEach(v->deleteVideoByIdAndUser(v, user));
 		
 	}
+	
+
+	
+	
 	
 	
 	private UserEntity findUserByEmailAndActive(String email) {
@@ -207,6 +223,12 @@ public class VideoServiceImpl implements VideoService{
 						email)));
 	}
 	
+	
+	private VideoEntity findVideoByIdAndIsNotStatusAndUserId(String videoId, VideoStatus status, VideoStatus status1, Long userId) {
+		return videoDao.findVideoByIdAndIsNotStatusAndUserId(videoId, status.name(), status1.name(), userId).orElseThrow(()->
+			new NotFoundException(String.format("Видео с идентификатором \"%s\" не найдено", videoId))
+				);
+	}
 	
 	
 	private static String sha1(HttpServletRequest request) {
@@ -254,6 +276,39 @@ public class VideoServiceImpl implements VideoService{
 			throw new IllegalStateException();
 		}
 	}
+	
+	@Transactional
+	private void deleteVideoByIdAndUser(String videoId, UserEntity user) {
+		videoDao.findVideoByIdAndIsNotStatusAndUserId(
+				videoId, DELETE.name(), BLOCK.name(), user.getUserId())
+					.ifPresentOrElse((v)->{
+						v.setDeletedAt(LocalDateTime.now());
+						v.setOldStatusVideo(v.getStatus());
+						v.setStatus(DELETE);
+					}, ()->{
+						throw new NotFoundException(
+							String.format(
+									"Видео с идентификатором \"%s\" не найдено у пользователя: %s",
+									videoId, user.getUsername()));
+					});
+	}
+	
+	@Transactional
+	private void updateVideoByIdAndUser(VideoModelUpdate videoModel, UserEntity user) {
+		videoDao.findVideoByIdAndIsNotStatusAndUserId(
+				videoModel.getVideoId(), DELETE.name(), BLOCK.name(), user.getUserId()).ifPresentOrElse((v)->{
+					v.setTitle(videoModel.getTitle());
+					v.setDescription(videoModel.getDescription());
+					v.setStatus(videoModel.getStatus());
+				}, ()->{
+					throw new NotFoundException(
+						String.format(
+								"Видео с идентификатором \"%s\" не найдено у пользователя: %s",
+								videoModel.getVideoId(), user.getEmail()));
+				});
+	}
+
+
 
 
 

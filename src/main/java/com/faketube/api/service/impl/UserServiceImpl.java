@@ -148,10 +148,11 @@ public class UserServiceImpl implements UserService {
 		userDao.findById(userId).ifPresentOrElse((u)->{
 			u.setActive(true);
 			u.setBlockedAt(null);
-			u.getVideos().stream().filter((v)->v.getOldStatusVideo()!=null).forEach((v)->{
-				v.setStatus(v.getOldStatusVideo());
-				v.setOldStatusVideo(null);
-				v.setBlockedAt(null);
+			u.getVideos().stream().filter((v)->
+				v.getOldStatusVideo()!=null&&v.getOldStatusVideo()!=VideoStatus.BLOCK).forEach((v)->{
+					v.setStatus(v.getOldStatusVideo());
+					v.setOldStatusVideo(null);
+					v.setBlockedAt(null);
 			});
 			u.getComments().stream().filter((c)->c.getOldStatus()==CommentStatus.ACTIVE).forEach((com)->{
 				com.setStatus(com.getOldStatus());
