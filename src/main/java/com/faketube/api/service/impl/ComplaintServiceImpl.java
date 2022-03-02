@@ -126,8 +126,28 @@ public class ComplaintServiceImpl implements ComplaintService{
 							"Заявка с идентификатором \"%s\" не найдена", 
 							complaintId));}
 		);
-		
-		
+	}
+	
+	@Override
+	@Transactional
+	public void deleteComplaintAndRecoveryVideo(Long complaintId) {
+		complaintVideoDao.findByComplaintIdAndStatus(
+				complaintId, VideoComplaintStatus.RECEIVED).ifPresentOrElse((c)->{
+					if(c.getUser().getBlockedAt()==null) {
+						c.getVideo().setBlockedAt(null);
+						c.getVideo().setStatus(c.getVideo().getOldStatusVideo());
+						c.getVideo().setOldStatusVideo(null);
+					}
+					c.setStatus(VideoComplaintStatus.REJECTED);
+					acceptedComplaintDao.deleteByVideoAndAuthorVideoAndComplaintUser(
+							c.getVideo(),c.getVideo().getUser() ,c.getUser());
+					if(!c.getVideo().getUser().isActive()&&
+							acceptedComplaintDao.countByAuthorVideo(c.getVideo().getUser())<3) {
+						userService.unblockUserByUserId(c.getVideo().getUser().getUserId());
+					}
+				}, ()->{
+					throw new NotFoundException(String.format("Заявка не найден \"%s\"", complaintId));
+				});
 		
 	}
 
@@ -149,6 +169,8 @@ public class ComplaintServiceImpl implements ComplaintService{
 													"Видео с идентификатором %s не найдено",
 													videoId)));
 	}
+
+
 
 
 

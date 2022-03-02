@@ -17,4 +17,6 @@ public interface ComplaintService {
 
 	void updateStatusComplaint(Long complaintId, VideoComplaintStatus status);
 
+	void deleteComplaintAndRecoveryVideo(Long complaintId);
+
 }

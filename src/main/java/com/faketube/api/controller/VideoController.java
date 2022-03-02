@@ -16,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,9 +56,11 @@ public class VideoController {
 	public static final String UPLOAD_NEW_VIDEO_FROM_USER="/api/video/upload"; 
 	public static final String GET_ALL_GRADE_VIDEO_FROM_USER = "/api/video/grade-videos";
 	public static final String DELETE_VIDEO_FROM_USER_BY_VIDEO_ID = "/api/video/{videoId}";
-	private static final String UPDATE_VIDEO_FROM_USER = "/api/video/";
-	private static final String UPDATE_LIST_VIDEO_FROM_USER = "/api/video/more";
-	private static final String DELETE_LIST_VIDEO_FROM_USER = "/api/video/more";
+	public static final String UPDATE_VIDEO_FROM_USER = "/api/video/";
+	public static final String UPDATE_LIST_VIDEO_FROM_USER = "/api/video/more";
+	public static final String DELETE_LIST_VIDEO_FROM_USER = "/api/video/more";
+	public static final String RECOVERY_VIDEO_BY_VIDEO_ID = "/api/video/{videoId}";
+	public static final String RECOVERY_MORE_VIDEO = "/api/video/";
 	
 	@GetMapping(GET_VIDEO_BY_ID)
 	public ResponseEntity<?> getVideoById(@PathVariable("videoId") String videoId,
@@ -140,6 +143,20 @@ public class VideoController {
 		
 	}
 	
+	
+	@PreAuthorize("hasAuthority('user:write')")
+	@PatchMapping(RECOVERY_VIDEO_BY_VIDEO_ID)
+	public ResponseEntity<?> recoveryVideoByVideoId(@PathVariable("videoId") String videoId){
+		videoService.recoveryVideoById(videoId);
+		return new ResponseEntity<>(HttpStatus.ACCEPTED);
+	}
+	
+	@PreAuthorize("hasAuthority('user:write')")
+	@PatchMapping(RECOVERY_MORE_VIDEO)
+	public ResponseEntity<?> recoveryMoreVideoByVideoId(@RequestBody String[] videoIds){
+		videoService.recoveryMoreVideo(videoIds);
+		return new ResponseEntity<>(HttpStatus.ACCEPTED);
+	}
 	
 	
 	

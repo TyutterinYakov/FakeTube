@@ -31,4 +31,8 @@ public interface VideoService {
 
 	void deleteMoreVideo(String[] listVideoId, String name);
 
+	void recoveryVideoById(String videoId);
+
+	void recoveryMoreVideo(String[] listVideoId);
+
 }

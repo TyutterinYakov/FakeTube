@@ -210,6 +210,24 @@ public class VideoServiceImpl implements VideoService{
 		
 	}
 	
+	
+	@Override
+	@Transactional
+	public void recoveryMoreVideo(String[] listVideoId) {
+		Arrays.asList(listVideoId).forEach(id->recoveryVideoById(id));
+	}
+	
+	
+	@Override
+	@Transactional
+	public void recoveryVideoById(String videoId) {
+		videoDao.findByVideoIdAndStatus(videoId, DELETE).ifPresent((v)->{
+			v.setDeletedAt(null);
+			v.setStatus(v.getOldStatusVideo());
+			v.setOldStatusVideo(null);
+		});;
+	}
+	
 
 	
 	
@@ -307,6 +325,7 @@ public class VideoServiceImpl implements VideoService{
 								videoModel.getVideoId(), user.getEmail()));
 				});
 	}
+
 
 
 

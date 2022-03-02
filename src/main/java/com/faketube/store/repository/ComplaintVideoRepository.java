@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoComplaintEntity;
+import com.faketube.store.entity.video.VideoComplaintStatus;
 import com.faketube.store.entity.video.VideoEntity;
 
 @Repository
@@ -16,5 +17,7 @@ public interface ComplaintVideoRepository extends JpaRepository<VideoComplaintEn
 	List<VideoComplaintEntity> findAllByVideo(VideoEntity v);
 
 	Optional<VideoComplaintEntity> findByUserAndVideo(UserEntity user, VideoEntity video);
+
+	Optional<VideoComplaintEntity> findByComplaintIdAndStatus(Long complaintId, VideoComplaintStatus received);
 
 }

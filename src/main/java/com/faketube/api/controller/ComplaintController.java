@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ public class ComplaintController {
 	public static final String GET_COMPLAINT_BY_VIDEO = "/api/video/complaint/{videoId}";
 	public static final String GET_ALL_COMPLAINTS_BY_USER = "/api/video/complaint";
 	public static final String UPDATE_STATUS_COMPLAINT = "/api/video/complaint/{complaintId}";
+	public static final String DELETE_COMPLAINT_AND_RECOVERY_VIDEO = "/api/video/complaint/{complaintId}";
 	
 	
 	
@@ -72,6 +74,15 @@ public class ComplaintController {
 		complaintService.updateStatusComplaint(complaintId, status);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
+	
+	@DeleteMapping(DELETE_COMPLAINT_AND_RECOVERY_VIDEO)
+	@PreAuthorize("hasAuthority('user:write')")
+	public ResponseEntity<?> deleteComplaintAndRecoveryVideo(
+			@PathVariable("complaintId") Long complaintId){
+		complaintService.deleteComplaintAndRecoveryVideo(complaintId);
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+	}
+	
 	
 	
 	

@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.faketube.store.entity.video.VideoEntity;
+import com.faketube.store.entity.video.VideoStatus;
 
 @Repository
 public interface VideoRepository extends JpaRepository<VideoEntity, String>{
@@ -36,5 +37,7 @@ public interface VideoRepository extends JpaRepository<VideoEntity, String>{
 			+ "and (video_metadata.status=?3 or video_metadata.status=?4) "
 			+ "and grade_video.user_user_id=?5")
 	List<VideoEntity> findAllGradeVideoUserAndStatus(boolean accesUser, String statusGrade, String statusVideo, String statusVideo2, Long userId);
+
+	Optional<VideoEntity> findByVideoIdAndStatus(String videoId, VideoStatus delete);
 
 }

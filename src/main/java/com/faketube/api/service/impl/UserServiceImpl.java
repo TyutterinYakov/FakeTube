@@ -129,7 +129,7 @@ public class UserServiceImpl implements UserService {
 			});
 			u.setActive(false);
 			u.setBlockedAt(LocalDateTime.now());
-			u.getVideos().stream().forEach((v)->{
+			u.getVideos().stream().filter((vid)->vid.getBlockedAt()==null).forEach((v)->{
 				v.setOldStatusVideo(v.getStatus());
 				v.setStatus(VideoStatus.BLOCK);
 				v.setBlockedAt(LocalDateTime.now());
