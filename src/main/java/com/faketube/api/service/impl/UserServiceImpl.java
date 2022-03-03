@@ -13,15 +13,19 @@ import com.faketube.api.dto.UserDto;
 import com.faketube.api.dto.VideoDto;
 import com.faketube.api.dto.factory.UserDtoFactory;
 import com.faketube.api.dto.factory.VideoDtoFactory;
+import com.faketube.api.exception.BadRequestException;
 import com.faketube.api.exception.NotFoundException;
 import com.faketube.api.exception.UserFoundException;
 import com.faketube.api.model.UserModel;
 import com.faketube.api.service.UserService;
 import com.faketube.store.entity.stats.CommentStatus;
 import com.faketube.store.entity.stats.GradeVideoStatus;
+import com.faketube.store.entity.user.BlockUserEntity;
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoStatus;
 import com.faketube.store.repository.AcceptedComplaintRepository;
+import com.faketube.store.repository.BlockUserRepository;
+import com.faketube.store.repository.CommentRepository;
 import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
@@ -34,16 +38,21 @@ public class UserServiceImpl implements UserService {
 	private final UserDtoFactory userDtoFactory;
 	private final VideoRepository videoDao;
 	private final AcceptedComplaintRepository acceptedComplaintDao;
+	private final BlockUserRepository blockUserDao;
+	private final CommentRepository commentDao;
 	
 	@Autowired
 	public UserServiceImpl(UserRepository userDao, VideoDtoFactory videoDtoFactory, UserDtoFactory userDtoFactory,
-			VideoRepository videoDao, AcceptedComplaintRepository acceptedComplaintDao) {
+			VideoRepository videoDao, AcceptedComplaintRepository acceptedComplaintDao,
+			BlockUserRepository blockUserDao, CommentRepository commentDao) {
 		super();
 		this.userDao = userDao;
 		this.videoDtoFactory = videoDtoFactory;
 		this.userDtoFactory = userDtoFactory;
 		this.videoDao = videoDao;
 		this.acceptedComplaintDao = acceptedComplaintDao;
+		this.blockUserDao = blockUserDao;
+		this.commentDao = commentDao;
 	}
 
 	@Override
@@ -180,8 +189,65 @@ public class UserServiceImpl implements UserService {
 	}
 	
 	
+	@Override
+	@Transactional
+	public void blockUserByAuthorChannel(String name, Long userId, Long timeSec) {
+		UserEntity authorChannel = findUserByEmailAndActive(name);
+		UserEntity blockUser = findUserById(userId);
+		blockUserDao.findByBlockUserAndAuthorChannel(blockUser, authorChannel).ifPresent((b)->{
+			throw new BadRequestException(
+					String.format(
+							"Вы уже заблокировали этого пользователя"));
+		});
+		blockUserDao.save(
+				new BlockUserEntity(
+						blockUser, 
+						authorChannel, 
+						LocalDateTime.now().plusSeconds(timeSec)));
+		commentDao
+		.findAllByUserAndAuthorChannelAndStatus(
+				blockUser, 
+				authorChannel, 
+				CommentStatus.ACTIVE)
+		.stream()
+		.forEach((c)->{
+			c.setOldStatus(c.getStatus());
+			c.setStatus(CommentStatus.BLOCK_BY_USER);
+		});
+	}
 	
 	
+	@Override
+	@Transactional
+	public void unblockUserByAuthorChannel(UserEntity blockUser, UserEntity authorChannel) {
+		blockUserDao.findByBlockUserAndAuthorChannel(blockUser, authorChannel).ifPresent((b)->{
+			commentDao.findAllByUserAndAuthorChannelAndStatus(
+					blockUser, authorChannel, CommentStatus.BLOCK_BY_USER)
+			.stream().forEach((c)->{
+				c.setStatus(c.getOldStatus());
+				c.setOldStatus(null);
+			});
+			blockUserDao.deleteById(b.getBlockId());
+		});
+	}
+	
+	@Override
+	public void unblockUserByAuthorChannel(String authorChannel, Long blockUserId) {
+		UserEntity author = findUserByEmailAndActive(authorChannel);
+		UserEntity blockUser = findUserById(blockUserId);
+		unblockUserByAuthorChannel(blockUser, author);
+	}
+	
+	
+	
+	
+	
+	
+	private UserEntity findUserByEmailAndActive(String email) {
+		return userDao.findByEmailAndActive(email, true).orElseThrow(()->
+				new NotFoundException(String.format(
+						"Ошибка! Пользователь с почтой \"%s\" не найден", email)));
+	}
 	
 
 	private UserEntity findUserByEmail(String email) {
@@ -204,6 +270,9 @@ public class UserServiceImpl implements UserService {
 							email));
 			});
 	}
+
+
+
 
 
 

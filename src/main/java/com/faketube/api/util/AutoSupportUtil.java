@@ -14,28 +14,36 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.faketube.api.service.UserService;
 import com.faketube.store.entity.video.VideoEntity;
+import com.faketube.store.repository.BlockUserRepository;
 import com.faketube.store.repository.CommentRepository;
 import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
 @Component
-public class AutoDeleteVideo {
+public class AutoSupportUtil {
 	@Value("${data.folder}")
 	private String dataFolder;
 
-	private static final Logger logger = LoggerFactory.getLogger(AutoDeleteVideo.class);
+	private static final Logger logger = LoggerFactory.getLogger(AutoSupportUtil.class);
 	
 	private final VideoRepository videoDao;
 	private final UserRepository userDao;
 	private final CommentRepository commentDao;
+	private final BlockUserRepository blockUserDao;
+	private final UserService userService;
+
 
 	@Autowired
-	public AutoDeleteVideo(VideoRepository videoDao, UserRepository userDao, CommentRepository commentDao) {
+	public AutoSupportUtil(VideoRepository videoDao, UserRepository userDao, CommentRepository commentDao,
+			BlockUserRepository blockUserDao, UserService userService) {
 		super();
 		this.videoDao = videoDao;
 		this.userDao = userDao;
 		this.commentDao = commentDao;
+		this.blockUserDao = blockUserDao;
+		this.userService = userService;
 	}
 
 
@@ -63,6 +71,15 @@ public class AutoDeleteVideo {
 	@Scheduled(cron="0 0 5 * * *")
 	public void cleanCommentVideo() {
 		commentDao.deleteAllByDeletedAtBefore(LocalDateTime.now().minusMonths(1));
+	}
+	
+	@Transactional
+	@Scheduled(cron="0/10 * * * * *")
+	public void cleanBlockUserByAuthor() {
+		blockUserDao.findAllByBlockedTimeBefore(LocalDateTime.now()).stream().forEach((b)->{
+			userService.unblockUserByAuthorChannel(
+					b.getBlockUser(), b.getAuthorChannel());
+		});
 	}
 	
 	

@@ -43,6 +43,7 @@ public class StatsVideoController {
 	public static final String ADD_COMMENT_VIDEO_BY_VIDEO_ID = "/api/video/comments/{videoId}";
 	public static final String DELETE_COMMENT_VIDEO= "/api/video/comments/{videoId}/{commentId}";
 	public static final String UPDATE_COMMENT_VIDEO = "/api/video/comments/{videoId}/{commentId}";
+	
 
 	
 	

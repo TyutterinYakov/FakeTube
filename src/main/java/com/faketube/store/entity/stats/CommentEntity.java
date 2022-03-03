@@ -35,15 +35,18 @@ public class CommentEntity {
 	private UserEntity user;
 	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH)
 	private VideoEntity video;
+	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.REFRESH)
+	private UserEntity authorChannel;
 	
 	public CommentEntity() {
 		super();
 	}
-	public CommentEntity(String message, UserEntity user, VideoEntity video) {
+	public CommentEntity(String message, UserEntity user, VideoEntity video, UserEntity authorChannel) {
 		super();
 		this.message = message;
 		this.user = user;
 		this.video = video;
+		this.authorChannel=authorChannel;
 	}
 	public Long getCommentId() {
 		return commentId;
@@ -99,6 +102,13 @@ public class CommentEntity {
 	public void setChange(Boolean change) {
 		this.change = change;
 	}
+	public UserEntity getAuthorChannel() {
+		return authorChannel;
+	}
+	public void setAuthorChannel(UserEntity authorChannel) {
+		this.authorChannel = authorChannel;
+	}
+	
 	
 	
 	

@@ -6,6 +6,7 @@ import com.faketube.api.dto.UserDto;
 import com.faketube.api.dto.VideoDto;
 import com.faketube.api.model.UserModel;
 import com.faketube.api.model.UserModelRegister;
+import com.faketube.store.entity.user.UserEntity;
 
 public interface UserService {
 
@@ -26,5 +27,11 @@ public interface UserService {
 	void unblockUserByUserId(Long userId);
 
 	List<UserDto> getBlockAndDeleteUsers();
+
+	void blockUserByAuthorChannel(String name, Long userId, Long timeSec);
+	
+	void unblockUserByAuthorChannel(UserEntity blockUser, UserEntity authorChannel);
+
+	void unblockUserByAuthorChannel(String authorChannel, Long blockUserId);
 
 }

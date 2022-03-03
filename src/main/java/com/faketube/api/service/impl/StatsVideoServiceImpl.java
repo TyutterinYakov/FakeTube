@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.faketube.api.dto.CommentDto;
 import com.faketube.api.dto.GradeVideoDto;
 import com.faketube.api.dto.factory.CommentDtoFactory;
+import com.faketube.api.exception.BadRequestException;
 import com.faketube.api.exception.NotFoundException;
 import com.faketube.api.service.StatsVideoService;
 import com.faketube.store.entity.stats.CommentEntity;
@@ -23,6 +24,7 @@ import com.faketube.store.entity.stats.GradeVideoStatus;
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoEntity;
 import com.faketube.store.entity.video.VideoStatus;
+import com.faketube.store.repository.BlockUserRepository;
 import com.faketube.store.repository.CommentRepository;
 import com.faketube.store.repository.GradeVideoRepository;
 import com.faketube.store.repository.UserRepository;
@@ -36,18 +38,19 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 	private final GradeVideoRepository gradeVideoDao;
 	private final CommentDtoFactory commentDtoFactory;
 	private final CommentRepository commentDao;
+	private final BlockUserRepository blockUserDao;
 	
 	@Autowired
 	public StatsVideoServiceImpl(UserRepository userDao, VideoRepository videoDao, GradeVideoRepository gradeVideoDao,
-			CommentDtoFactory commentDtoFactory, CommentRepository commentDao) {
+			CommentDtoFactory commentDtoFactory, CommentRepository commentDao, BlockUserRepository blockUserDao) {
 		super();
 		this.userDao = userDao;
 		this.videoDao = videoDao;
 		this.gradeVideoDao = gradeVideoDao;
 		this.commentDtoFactory = commentDtoFactory;
 		this.commentDao = commentDao;
+		this.blockUserDao = blockUserDao;
 	}
-
 
 	@Transactional
 	@Override
@@ -174,17 +177,25 @@ public class StatsVideoServiceImpl implements StatsVideoService{
 		UserEntity user = findUserByUsernameAndActive(userName);
 		findVideoByIdAndStatus(videoId, VideoStatus.PUBLIC, VideoStatus.LINK)
 		.ifPresentOrElse((v)->{
+			blockUserDao.findByBlockUserAndAuthorChannel(user, v.getUser()).ifPresent((b)->{
+				throw new BadRequestException(
+						String.format(
+								"Вы заблокированы на этом канале и не можете оставлять комментарии"));
+			});
 			commentDao.save(
 					new CommentEntity(
 						message,
 						user,
-						v));
+						v,
+						v.getUser()));
 		}, ()->{
+			VideoEntity video = findVideoByUserAndId(user, videoId);
 			commentDao.save(
 				new CommentEntity(
 						message,
 						user,
-						findVideoByUserAndId(user, videoId)));
+						video,
+						video.getUser()));
 			}
 		);
 	}

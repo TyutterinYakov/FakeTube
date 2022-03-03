@@ -53,6 +53,10 @@ public class UserEntity {
 	private List<AcceptedComplaint> authorVideos = new LinkedList<>();
 	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="complaintUser")
 	private List<AcceptedComplaint> complaintUsers = new LinkedList<>();
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="authorChannel")
+	private List<BlockUserEntity> blockUsers = new LinkedList<>();
+	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="authorChannel")
+	private List<CommentEntity> commentsMyChannel = new LinkedList<>();
 	
 	public UserEntity() {
 		super();
@@ -167,6 +171,23 @@ public class UserEntity {
 	public void setComplaintUsers(List<AcceptedComplaint> complaintUsers) {
 		this.complaintUsers = complaintUsers;
 	}
+
+	public List<BlockUserEntity> getBlockUsers() {
+		return blockUsers;
+	}
+
+	public void setBlockUsers(List<BlockUserEntity> blockUsers) {
+		this.blockUsers = blockUsers;
+	}
+
+	public List<CommentEntity> getCommentsMyChannel() {
+		return commentsMyChannel;
+	}
+
+	public void setCommentsMyChannel(List<CommentEntity> commentsMyChannel) {
+		this.commentsMyChannel = commentsMyChannel;
+	}
+	
 
 	
 	
