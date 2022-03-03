@@ -1,5 +1,8 @@
 package com.faketube.api.dto.factory;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Component;
 
 import com.faketube.api.dto.UserDto;
@@ -16,5 +19,13 @@ public class UserDtoFactory {
 				entity.getUsername(),
 				entity.getEmail(),
 				entity.getRole());
+	}
+	
+	
+	public List<UserDto> createListUserDto(List<UserEntity> entities){
+		return entities
+				.stream()
+				.map(this::createUserDto)
+				.collect(Collectors.toList());
 	}
 }

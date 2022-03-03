@@ -10,7 +10,9 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.faketube.api.dto.AcceptedComplaintDto;
 import com.faketube.api.dto.VideoComplaintDto;
+import com.faketube.api.dto.factory.AcceptedComplaintDtoFactory;
 import com.faketube.api.dto.factory.VideoComplaintDtoFactory;
 import com.faketube.api.exception.BadRequestException;
 import com.faketube.api.exception.NotFoundException;
@@ -38,13 +40,13 @@ public class ComplaintServiceImpl implements ComplaintService{
 	private final VideoRepository videoDao;
 	private final AcceptedComplaintRepository acceptedComplaintDao;
 	private final UserService userService;
+	private final AcceptedComplaintDtoFactory acceptedComplaintDtoFactory;
 	
-
-
 	@Autowired
 	public ComplaintServiceImpl(ComplaintVideoRepository complaintVideoDao,
 			VideoComplaintDtoFactory videoComplaintDtoFactory, UserRepository userDao, VideoRepository videoDao,
-			AcceptedComplaintRepository acceptedComplaintDao, UserService userService) {
+			AcceptedComplaintRepository acceptedComplaintDao, UserService userService,
+			AcceptedComplaintDtoFactory acceptedComplaintDtoFactory) {
 		super();
 		this.complaintVideoDao = complaintVideoDao;
 		this.videoComplaintDtoFactory = videoComplaintDtoFactory;
@@ -52,6 +54,7 @@ public class ComplaintServiceImpl implements ComplaintService{
 		this.videoDao = videoDao;
 		this.acceptedComplaintDao = acceptedComplaintDao;
 		this.userService = userService;
+		this.acceptedComplaintDtoFactory = acceptedComplaintDtoFactory;
 	}
 
 
@@ -150,6 +153,14 @@ public class ComplaintServiceImpl implements ComplaintService{
 				});
 		
 	}
+	
+	@Override
+	public List<AcceptedComplaintDto> getAllAcceptedComplaint() {
+		UserEntity user = findUserByEmailAndActiveTrue("yasha20053@yandex.ru");
+		return acceptedComplaintDtoFactory
+				.createListAcceptedCompalaintDto(
+						acceptedComplaintDao.findAll());
+	}
 
 	
 	
@@ -169,6 +180,9 @@ public class ComplaintServiceImpl implements ComplaintService{
 													"Видео с идентификатором %s не найдено",
 													videoId)));
 	}
+
+
+
 
 
 

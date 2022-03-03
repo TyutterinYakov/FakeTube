@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.faketube.api.dto.AcceptedComplaintDto;
 import com.faketube.api.dto.VideoComplaintDto;
 import com.faketube.api.service.ComplaintService;
 import com.faketube.store.entity.video.ReasonVideo;
@@ -38,6 +39,7 @@ public class ComplaintController {
 	public static final String GET_ALL_COMPLAINTS_BY_USER = "/api/video/complaint";
 	public static final String UPDATE_STATUS_COMPLAINT = "/api/video/complaint/{complaintId}";
 	public static final String DELETE_COMPLAINT_AND_RECOVERY_VIDEO = "/api/video/complaint/{complaintId}";
+	public static final String GET_ALL_ACCEPTED_COMPLAINT = "/api/video/complaint/accepted";
 	
 	
 	
@@ -82,6 +84,13 @@ public class ComplaintController {
 		complaintService.deleteComplaintAndRecoveryVideo(complaintId);
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
+	
+	@GetMapping(GET_ALL_ACCEPTED_COMPLAINT)
+	@PreAuthorize("hasAuthority('user:write')")
+	public ResponseEntity<List<AcceptedComplaintDto>> getAllAcceptedComplaint(){
+		return ResponseEntity.ok(complaintService.getAllAcceptedComplaint());
+	}
+	
 	
 	
 	

@@ -25,4 +25,6 @@ public interface UserService {
 
 	void unblockUserByUserId(Long userId);
 
+	List<UserDto> getBlockAndDeleteUsers();
+
 }

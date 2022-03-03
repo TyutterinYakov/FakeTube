@@ -1,6 +1,7 @@
 package com.faketube.store.repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,6 +25,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>{
 	Optional<UserEntity> findByuserIdAndDeletedAtAndActive(Long userId, Object object, boolean b);
 
 	Optional<UserEntity> findByUserIdAndActive(Long userId, boolean b);
+
+
+	List<UserEntity> findAllByActive(boolean b);
 	
 
 }

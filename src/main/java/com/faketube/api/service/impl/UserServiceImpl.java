@@ -21,6 +21,7 @@ import com.faketube.store.entity.stats.CommentStatus;
 import com.faketube.store.entity.stats.GradeVideoStatus;
 import com.faketube.store.entity.user.UserEntity;
 import com.faketube.store.entity.video.VideoStatus;
+import com.faketube.store.repository.AcceptedComplaintRepository;
 import com.faketube.store.repository.UserRepository;
 import com.faketube.store.repository.VideoRepository;
 
@@ -32,15 +33,17 @@ public class UserServiceImpl implements UserService {
 	private final VideoDtoFactory videoDtoFactory;
 	private final UserDtoFactory userDtoFactory;
 	private final VideoRepository videoDao;
+	private final AcceptedComplaintRepository acceptedComplaintDao;
 	
 	@Autowired
 	public UserServiceImpl(UserRepository userDao, VideoDtoFactory videoDtoFactory, UserDtoFactory userDtoFactory,
-			VideoRepository videoDao) {
+			VideoRepository videoDao, AcceptedComplaintRepository acceptedComplaintDao) {
 		super();
 		this.userDao = userDao;
 		this.videoDtoFactory = videoDtoFactory;
 		this.userDtoFactory = userDtoFactory;
 		this.videoDao = videoDao;
+		this.acceptedComplaintDao = acceptedComplaintDao;
 	}
 
 	@Override
@@ -150,9 +153,11 @@ public class UserServiceImpl implements UserService {
 			u.setBlockedAt(null);
 			u.getVideos().stream().filter((v)->
 				v.getOldStatusVideo()!=null&&v.getOldStatusVideo()!=VideoStatus.BLOCK).forEach((v)->{
-					v.setStatus(v.getOldStatusVideo());
-					v.setOldStatusVideo(null);
-					v.setBlockedAt(null);
+					if(!(acceptedComplaintDao.findAllByVideo(v).size()>0)) {
+						v.setStatus(v.getOldStatusVideo());
+						v.setOldStatusVideo(null);
+						v.setBlockedAt(null);
+					}
 			});
 			u.getComments().stream().filter((c)->c.getOldStatus()==CommentStatus.ACTIVE).forEach((com)->{
 				com.setStatus(com.getOldStatus());
@@ -164,6 +169,14 @@ public class UserServiceImpl implements UserService {
 							"Пользователь с идентификатором \"%s\" не найден",
 							userId));
 		});;
+	}
+	
+	@Override
+	public List<UserDto> getBlockAndDeleteUsers() {
+		return userDtoFactory
+				.createListUserDto(
+						userDao
+						.findAllByActive(false));
 	}
 	
 	
@@ -191,6 +204,7 @@ public class UserServiceImpl implements UserService {
 							email));
 			});
 	}
+
 
 
 

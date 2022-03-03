@@ -47,7 +47,8 @@ public class UserController {
 //	public static final String CREATE_USER_PROFILE = "/api/user/profile";
 	public static final String DELETE_USER_PROFILE = "/api/user/profile";
 	public static final String BLOCK_USER_BY_USER_ID = "/api/user/profile/block";
-	public static final String UNBLOCK_USER_BY_USER_ID = "/api/user/profile/unblock";;
+	public static final String UNBLOCK_USER_BY_USER_ID = "/api/user/profile/unblock";
+	public static final String GET_BLOCK_AND_DELETE_USERS = "/api/user/profile/blocks";
 	
 	
 	
@@ -100,6 +101,12 @@ public class UserController {
 	public ResponseEntity<?> unblockUserByUserId(@RequestParam("userId") Long userId){ 
 		userService.unblockUserByUserId(userId);
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
+	}
+	
+	@GetMapping(GET_BLOCK_AND_DELETE_USERS)
+	@PreAuthorize("hasAuthority('user:write')")
+	public ResponseEntity<List<UserDto>> getBlockAndDeleteUsers(){
+		return ResponseEntity.ok(userService.getBlockAndDeleteUsers());
 	}
 	
 	
