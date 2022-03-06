@@ -1,6 +1,7 @@
 package com.faketube.store.entity.user;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -57,6 +58,7 @@ public class UserEntity {
 	private List<BlockUserEntity> blockUsers = new LinkedList<>();
 	@OneToMany(fetch=FetchType.LAZY, cascade=CascadeType.REMOVE, mappedBy="authorChannel")
 	private List<CommentEntity> commentsMyChannel = new LinkedList<>();
+	
 	
 	public UserEntity() {
 		super();
@@ -187,7 +189,7 @@ public class UserEntity {
 	public void setCommentsMyChannel(List<CommentEntity> commentsMyChannel) {
 		this.commentsMyChannel = commentsMyChannel;
 	}
-	
+
 
 	
 	

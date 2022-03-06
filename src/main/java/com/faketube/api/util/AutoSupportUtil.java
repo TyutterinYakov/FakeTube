@@ -74,7 +74,7 @@ public class AutoSupportUtil {
 	}
 	
 	@Transactional
-	@Scheduled(cron="0/10 * * * * *")
+	@Scheduled(cron="0 0 6 * * *")
 	public void cleanBlockUserByAuthor() {
 		blockUserDao.findAllByBlockedTimeBefore(LocalDateTime.now()).stream().forEach((b)->{
 			userService.unblockUserByAuthorChannel(
