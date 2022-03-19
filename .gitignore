@@ -11,3 +11,4 @@ target/
 .mvn/
 bin/
 data/
+.idea/
